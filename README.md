@@ -7,8 +7,8 @@ Currently the repository contains:
 
 * A multigrid solver for the initial conditions
 
-  * * For the moment only the Hamiltonian Constraint is solved, but the intention is to make this more general. 
-      See the [wiki](https://github.com/GRChombo/GRChombo/wiki) for further details of the current setup.
+  * For the moment only the Hamiltonian Constraint is solved, but the intention is to make this more general. 
+    See the [wiki](https://github.com/GRChombo/GRChombo/wiki) for further details of the current setup.
 
 # GRChombo
 GRChombo is a new open-source code for numerical general relativity simulations. 
