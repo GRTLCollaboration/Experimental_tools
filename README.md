@@ -17,6 +17,10 @@ Currently the repository contains:
 * Files for intermediate checkpointing, i.e. writing checkpoints even though the
   levels are not synchronised in time. This is useful for very deep mesh hierarchies.
 
+* A tool for comparing two checkpoint files. This is a great way of testing
+  GRChombo (it can even pick up errors in the checkpointing process if one stops and
+  restarts before comparing checkpoint files).
+
 # GRChombo
 GRChombo is a new open-source code for numerical general relativity simulations. 
 It is developed and maintained by a collaboration of numerical relativists with a 
