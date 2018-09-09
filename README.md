@@ -1,7 +1,11 @@
 # Experimental tools
 
-This repository contains experimental tools for GRChombo (see below). These are untested
-and so used at your own risk!
+This repository contains experimental tools for GRChombo (see below).
+These tools are "experimental" for various reasons: some of them are not tested as
+rigourously as the main code, some are tested but not maintained and may have to be
+updated to work with the latest version of GRChombo, etc. None of the code in this
+repository has been through code review. Use it at your own risk and check that it
+does what you want it to do.
 
 Currently the repository contains:
 
