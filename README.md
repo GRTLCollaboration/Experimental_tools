@@ -14,7 +14,8 @@ Currently the repository contains:
   * For the moment only the Hamiltonian Constraint is solved, but the intention is to make this more general. 
     See the [wiki](https://github.com/GRChombo/GRChombo/wiki) for further details of the current setup.
 
-* Files for intermediate checkpointing if the mesh hierarchy gets very deep.
+* Files for intermediate checkpointing, i.e. writing checkpoints even though the
+  levels are not synchronised in time. This is useful for very deep mesh hierarchies.
 
 # GRChombo
 GRChombo is a new open-source code for numerical general relativity simulations. 
