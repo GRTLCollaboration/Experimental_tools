@@ -1,0 +1,13 @@
+This folder contains the necessary files for intermediate checkpointing. These
+files have been tested rigourously, but we have declared them experimental and
+not included them in the main code since there are a lot of small mistakes one
+may make (e.g. changing parameters when restarting from checkpoint is usually
+possible in GRChombo, but can lead to significant problems with intermediate
+checkpointing if the user is not aware of the dangers).
+
+The principle behind this code is that intermediate checkpoint files also
+include time interpolation polynomials, which can be used to fill ghosts cells.
+
+If you want to use the files in this directory, you will have to change Chombo
+with the appropriate setter and getter functions for the time interpolation
+polynomials.
