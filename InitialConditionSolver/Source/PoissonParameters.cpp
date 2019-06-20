@@ -128,6 +128,9 @@ void getPoissonParameters(PoissonParameters &a_params)
     a_params.probHi = RealVect::Zero;
     a_params.probHi += a_params.domainLength;
 
+    // Hardcode num_ghosts to 3 as this is what GRChombo needs
+    a_params.num_ghosts = 3;
+
     // Periodicity - for the moment enforce same in all directions
     ProblemDomain crseDom(crseDomBox);
     int is_periodic;
@@ -140,5 +143,59 @@ void getPoissonParameters(PoissonParameters &a_params)
     }
     a_params.coarsestDomain = crseDom;
 
+    // Load GRChombo boundary params
+    Vector<int> grchombo_hi_boundary(SpaceDim, GRChomboBCs::STATIC_BC);
+    Vector<int> grchombo_lo_boundary(SpaceDim, GRChomboBCs::STATIC_BC);
+    pp.queryarr("hi_boundary", grchombo_hi_boundary, 0, SpaceDim);
+    pp.queryarr("lo_boundary", grchombo_lo_boundary, 0, SpaceDim);
+
+    // set defaults and override below
+    Vector<int> vars_boundary_parity(NUM_MULTIGRID_VARS, GRChomboBCs::EVEN);
     pout() << "periodicity = " << is_periodic << endl;
+    for(int idir = 0; idir < SpaceDim; ++idir)
+    {
+        a_params.grchombo_boundary_params.hi_boundary[idir] =
+            grchombo_hi_boundary[idir];
+        a_params.grchombo_boundary_params.lo_boundary[idir] =
+            grchombo_lo_boundary[idir];
+        a_params.grchombo_boundary_params.is_periodic[idir] =
+            a_params.periodic[idir];
+
+    }
+    a_params.nonperiodic_boundaries_exist = false;
+    a_params.symmetric_boundaries_exist = false;
+
+    for (int idir = 0; idir < SpaceDim; ++idir)
+    {
+        if (!a_params.periodic[idir])
+        {
+            a_params.nonperiodic_boundaries_exist = true;
+            if ((grchombo_hi_boundary[idir] ==
+                 GRChomboBCs::REFLECTIVE_BC) ||
+                (grchombo_lo_boundary[idir] ==
+                 GRChomboBCs::REFLECTIVE_BC))
+            {
+                a_params.symmetric_boundaries_exist = true;
+                pp.getarr("vars_parity", vars_boundary_parity, 0,
+                          NUM_MULTIGRID_VARS);
+
+            }
+        }
+    }
+
+    for (int ivar = 0; ivar < NUM_MULTIGRID_VARS; ++ivar)
+    {
+        a_params.grchombo_boundary_params.vars_parity[ivar]
+            = vars_boundary_parity[ivar];
+    }
+
+    if (a_params.nonperiodic_boundaries_exist)
+    {
+        // write out boundary conditions where non periodic - useful for
+        // debug
+        GRChomboBCs::write_boundary_conditions(
+            a_params.grchombo_boundary_params);
+    }
+
+
 }
