@@ -109,21 +109,15 @@ C     petermc, 26 april 2001
 
 C laplacian term
         ldpsi = CHF_DTERM[
-     &  one/twelve*( -   dpsi(CHF_IX[i+2;j  ;k  ],n)
-     &     -     dpsi(CHF_IX[i-2;j  ;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i+1;j  ;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i-1;j  ;k  ],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
-     $  +one/twelve*( -  dpsi(CHF_IX[i  ;j+2;k  ],n)
-     &     -     dpsi(CHF_IX[i  ;j-2;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j+1;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j-1;k  ],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
-     $  +one/twelve*( -  dpsi(CHF_IX[i  ;j  ;k+2],n)
-     &     -     dpsi(CHF_IX[i  ;j  ;k-2],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j  ;k+1],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j  ;k-1],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ]
+     &     (    dpsi(CHF_IX[i+1;j  ;k  ],n)
+     &     +    dpsi(CHF_IX[i-1;j  ;k  ],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   dpsi(CHF_IX[i  ;j+1;k  ],n)
+     &     +    dpsi(CHF_IX[i  ;j-1;k  ],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   dpsi(CHF_IX[i  ;j  ;k+1],n)
+     &     +    dpsi(CHF_IX[i  ;j  ;k-1],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ]
 
         ldpsi = ldpsi * dxinv * bCoef(CHF_IX[i;j;k],n)
 
@@ -219,22 +213,17 @@ C     ------------------------------------------------------------------
 
 C laplacian term
 
+
         ldpsi = CHF_DTERM[
-     &  one/twelve*( -   dpsi(CHF_IX[i+2;j  ;k  ],n)
-     &     -     dpsi(CHF_IX[i-2;j  ;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i+1;j  ;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i-1;j  ;k  ],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
-     $  +one/twelve*( -  dpsi(CHF_IX[i  ;j+2;k  ],n)
-     &     -     dpsi(CHF_IX[i  ;j-2;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j+1;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j-1;k  ],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
-     $  +one/twelve*( -  dpsi(CHF_IX[i  ;j  ;k+2],n)
-     &     -     dpsi(CHF_IX[i  ;j  ;k-2],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j  ;k+1],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j  ;k-1],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ]
+     &     (    dpsi(CHF_IX[i+1;j  ;k  ],n)
+     &     +    dpsi(CHF_IX[i-1;j  ;k  ],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   dpsi(CHF_IX[i  ;j+1;k  ],n)
+     &     +    dpsi(CHF_IX[i  ;j-1;k  ],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   dpsi(CHF_IX[i  ;j  ;k+1],n)
+     &     +    dpsi(CHF_IX[i  ;j  ;k-1],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ]
 
         ldpsi = ldpsi * dxinv * beta * bCoef(CHF_IX[i;j;k],n)
 
@@ -330,21 +319,15 @@ C     ------------------------------------------------------------------
 C add laplacian term (note sign minus -ldpsi -> +ldpsi)
 
         ldpsi = CHF_DTERM[
-     &  one/twelve*( -   dpsi(CHF_IX[i+2;j  ;k  ],n)
-     &     -     dpsi(CHF_IX[i-2;j  ;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i+1;j  ;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i-1;j  ;k  ],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
-     $  +one/twelve*( -  dpsi(CHF_IX[i  ;j+2;k  ],n)
-     &     -     dpsi(CHF_IX[i  ;j-2;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j+1;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j-1;k  ],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
-     $  +one/twelve*( -  dpsi(CHF_IX[i  ;j  ;k+2],n)
-     &     -     dpsi(CHF_IX[i  ;j  ;k-2],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j  ;k+1],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j  ;k-1],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ]
+     &     (    dpsi(CHF_IX[i+1;j  ;k  ],n)
+     &     +    dpsi(CHF_IX[i-1;j  ;k  ],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   dpsi(CHF_IX[i  ;j+1;k  ],n)
+     &     +    dpsi(CHF_IX[i  ;j-1;k  ],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   dpsi(CHF_IX[i  ;j  ;k+1],n)
+     &     +    dpsi(CHF_IX[i  ;j  ;k-1],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ]
  
         ldpsi = ldpsi * dxinv * beta * bCoef(CHF_IX[i;j;k],n)
 
@@ -432,21 +415,15 @@ C     ------------------------------------------------------------------
 C laplacian term
 
         ldpsi = CHF_DTERM[
-     &  one/twelve*( -   dpsi(CHF_IX[i+2;j  ;k  ],n)
-     &     -     dpsi(CHF_IX[i-2;j  ;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i+1;j  ;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i-1;j  ;k  ],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
-     $  +one/twelve*( -  dpsi(CHF_IX[i  ;j+2;k  ],n)
-     &     -     dpsi(CHF_IX[i  ;j-2;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j+1;k  ],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j-1;k  ],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
-     $  +one/twelve*( -  dpsi(CHF_IX[i  ;j  ;k+2],n)
-     &     -     dpsi(CHF_IX[i  ;j  ;k-2],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j  ;k+1],n)
-     &  +sixteen*dpsi(CHF_IX[i  ;j  ;k-1],n)
-     $  - thirty*dpsi(CHF_IX[i  ;j  ;k  ],n)) ]
+     &     (    dpsi(CHF_IX[i+1;j  ;k  ],n)
+     &     +    dpsi(CHF_IX[i-1;j  ;k  ],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   dpsi(CHF_IX[i  ;j+1;k  ],n)
+     &     +    dpsi(CHF_IX[i  ;j-1;k  ],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   dpsi(CHF_IX[i  ;j  ;k+1],n)
+     &     +    dpsi(CHF_IX[i  ;j  ;k-1],n)
+     $     -two*dpsi(CHF_IX[i  ;j  ;k  ],n)) ]
 
           ldpsi = ldpsi * dxinv * beta * bCoef(CHF_IX[i;j;k],n)
 
