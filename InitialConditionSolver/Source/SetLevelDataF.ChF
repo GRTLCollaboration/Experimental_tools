@@ -32,10 +32,19 @@ c     ----------------------------------------------------------------------
              ii2 = CHF_ID(d0,2)]
 
 c       2nd order
-           dpsidxdx = 1.0/dx/dx * (
-     &     +1.0 * psi(CHF_OFFSETIX[i;  -ii]  )
-     &     -2.0 * psi(CHF_AUTOIX  [i]        )
-     &     +1.0 * psi(CHF_OFFSETIX[i;  +ii]  )
+c           dpsidxdx = 1.0/dx/dx * (
+c     &     +1.0 * psi(CHF_OFFSETIX[i;  -ii]  )
+c     &     -2.0 * psi(CHF_AUTOIX  [i]        )
+c     &     +1.0 * psi(CHF_OFFSETIX[i;  +ii]  )
+c     &     )
+
+c       4th order
+           dpsidxdx = 1.0/12.0/dx/dx * (
+     &     - 1   *psi(CHF_OFFSETIX[i;-2*ii]  )
+     &     + 16  *psi(CHF_OFFSETIX[i;  -ii]  )
+     &     - 30   *psi(CHF_AUTOIX  [i]        )
+     &     + 16  *psi(CHF_OFFSETIX[i;  +ii]  )
+     &     - 1   *psi(CHF_OFFSETIX[i;+2*ii]  )
      &     )
 
 c       6th order
@@ -80,19 +89,27 @@ c     Note that the psi^-4 term from raising the index is dealt with elsewhere
               ii2 = CHF_ID(d0,2)]
 
 c      2nd order
-             dphidx = 0.5/dx * (
-     &     + phi(CHF_OFFSETIX[i;  +ii])
-     &     - phi(CHF_OFFSETIX[i;  -ii])
+c             dphidx = 0.5/dx * (
+c     &     + phi(CHF_OFFSETIX[i;  +ii])
+c     &     - phi(CHF_OFFSETIX[i;  -ii])
+c     &       )
+
+c      4th order
+            dphidx = 1.0/12.0/dx * ( 
+     &     + 1 *phi(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*phi(CHF_OFFSETIX[i;  -ii])
+     &     + 8*phi(CHF_OFFSETIX[i;  +ii])
+     &     - 1 *phi(CHF_OFFSETIX[i;+2*ii])
      &       )
 
 c      6th order
 c            dphidx = 1.0/60.0/dx * (
-c     &     - 1 *phi(CHF_OFFSETIX[i;+2*ii])
-c     &     + 9 *phi(CHF_OFFSETIX[i;+2*ii])
-c     &     - 45*phi(CHF_OFFSETIX[i;  +ii])
-c     &     + 45*phi(CHF_OFFSETIX[i;  -ii])
-c     &     - 9 *phi(CHF_OFFSETIX[i;-2*ii])
-c     &     + 1 *phi(CHF_OFFSETIX[i;+2*ii])
+c     &     - 1 *phi(CHF_OFFSETIX[i;-3*ii])
+c     &     + 9 *phi(CHF_OFFSETIX[i;-2*ii])
+c     &     - 45*phi(CHF_OFFSETIX[i;  -ii])
+c     &     + 45*phi(CHF_OFFSETIX[i;  +ii])
+c     &     - 9 *phi(CHF_OFFSETIX[i;+2*ii])
+c     &     + 1 *phi(CHF_OFFSETIX[i;+3*ii])
 c     &       )
 
             rho_grad_phi(CHF_AUTOIX[i]) = rho_grad_phi(CHF_AUTOIX[i]) + 0.5*dphidx*dphidx
