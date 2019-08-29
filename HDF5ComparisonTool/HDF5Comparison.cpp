@@ -18,8 +18,16 @@
 #include "ProblemDomain.H"
 #include <sys/time.h>
 
+struct LevelParams
+{
+    double tolerance = 0.0;
+    int abort_limit = 50; // will abort checking a level if there are more than
+                          // abort_limit disagreements on it
+};
+
 bool check_level_data(LevelData<FArrayBox> &lev_dat_1,
-                      LevelData<FArrayBox> &lev_dat_2)
+                      LevelData<FArrayBox> &lev_dat_2,
+                      const LevelParams &a_params)
 {
     CH_assert(lev_dat_1.disjointBoxLayout() == lev_dat_2.disjointBoxLayout());
 
@@ -38,8 +46,8 @@ bool check_level_data(LevelData<FArrayBox> &lev_dat_1,
             IntVect iv = bit();
             for (int icomp = 0; icomp < lev_dat_1.nComp(); ++icomp)
             {
-                Real difference = fab_1(iv, icomp) - fab_2(iv, icomp);
-                if (difference != 0)
+                Real difference = abs(fab_1(iv, icomp) - fab_2(iv, icomp));
+                if (difference > a_params.tolerance)
                 {
                     abort_counter++;
                     pout() << "Values at position " << iv << " in component "
@@ -47,7 +55,7 @@ bool check_level_data(LevelData<FArrayBox> &lev_dat_1,
                     pout() << "val 1: " << fab_1(iv, icomp);
                     pout() << " val 2: " << fab_2(iv, icomp) << endl;
                     disagree = true;
-                    if (abort_counter > 50)
+                    if (abort_counter > a_params.abort_limit)
                     {
                         pout() << "Too many problems on this level. Giving up "
                                   "and going to the next... "
@@ -92,6 +100,10 @@ int main(int argc, char *argv[])
 
     HDF5HeaderData header_2;
     header_2.readFromFile(handle_2);
+
+    LevelParams level_params;
+    pp.query("tolerance", level_params.tolerance);
+    pp.query("abort_limit", level_params.abort_limit);
 
     // read max level
     if (header_1.m_int.find("max_level") == header_1.m_int.end())
@@ -140,7 +152,8 @@ int main(int argc, char *argv[])
                                                level_data_1.nComp(),
                                                level_data_1.ghostVect());
         level_data_2.copyTo(level_data_2_copy);
-        bool level_disagree = check_level_data(level_data_1, level_data_2_copy);
+        bool level_disagree
+            = check_level_data(level_data_1, level_data_2_copy, level_params);
         cout << "Does level " << ilev << " agree? " << !level_disagree << endl;
         disagree |= level_disagree;
     }
@@ -153,6 +166,4 @@ int main(int argc, char *argv[])
     // dumpmemoryatexit();
     MPI_Finalize();
 #endif
-
-    return disagree;
 }
