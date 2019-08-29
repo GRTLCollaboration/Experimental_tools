@@ -24,7 +24,7 @@
 
 // This takes an IntVect and writes the physical coordinates to a RealVect
 inline void get_loc(RealVect &a_out_loc, const IntVect &a_iv,
-             const RealVect &a_dx, const PoissonParameters &a_params)
+                    const RealVect &a_dx, const PoissonParameters &a_params)
 {
     a_out_loc = a_iv + 0.5 * RealVect::Unit;
     a_out_loc *= a_dx;
@@ -80,12 +80,11 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
 } // end set_initial_conditions
 
 // computes the Laplacian of psi at a point in a box
-inline Real get_laplacian_psi(const IntVect &a_iv,
-                              const FArrayBox &a_psi_fab,
+inline Real get_laplacian_psi(const IntVect &a_iv, const FArrayBox &a_psi_fab,
                               const RealVect &a_dx)
 {
     Real laplacian_of_psi = 0.0;
-    for(int idir = 0; idir < SpaceDim; ++idir)
+    for (int idir = 0; idir < SpaceDim; ++idir)
     {
         IntVect iv_offset1 = a_iv;
         IntVect iv_offset2 = a_iv;
@@ -94,9 +93,8 @@ inline Real get_laplacian_psi(const IntVect &a_iv,
 
         // 2nd order stencil for now
         Real d2psi_dxdx = 1.0 / (a_dx[idir] * a_dx[idir]) *
-                          (+1.0 * a_psi_fab(iv_offset2)
-                           -2.0 * a_psi_fab(a_iv)
-                           +1.0 * a_psi_fab(iv_offset1));
+                          (+1.0 * a_psi_fab(iv_offset2) -
+                           2.0 * a_psi_fab(a_iv) + 1.0 * a_psi_fab(iv_offset1));
         laplacian_of_psi += d2psi_dxdx;
     }
     return laplacian_of_psi;
@@ -104,12 +102,11 @@ inline Real get_laplacian_psi(const IntVect &a_iv,
 
 // computes the gradient of the scalar field squared at a point in a box
 // i.e. \delta^{ij} d_i phi d_j phi
-inline Real get_grad_phi_sq(const IntVect &a_iv,
-                            const FArrayBox &a_phi_fab,
+inline Real get_grad_phi_sq(const IntVect &a_iv, const FArrayBox &a_phi_fab,
                             const RealVect &a_dx)
 {
     Real grad_phi_sq = 0.0;
-    for(int idir = 0; idir < SpaceDim; ++idir)
+    for (int idir = 0; idir < SpaceDim; ++idir)
     {
         IntVect iv_offset1 = a_iv;
         IntVect iv_offset2 = a_iv;
@@ -117,13 +114,13 @@ inline Real get_grad_phi_sq(const IntVect &a_iv,
         iv_offset2[idir] += 1;
 
         // 2nd order stencils for now
-        Real dphi_dx = 0.5 * (a_phi_fab(iv_offset2)
-                            - a_phi_fab(iv_offset1)) / a_dx[idir] ;
+        Real dphi_dx =
+            0.5 * (a_phi_fab(iv_offset2) - a_phi_fab(iv_offset1)) / a_dx[idir];
 
         grad_phi_sq += dphi_dx * dphi_dx;
     }
     return grad_phi_sq;
-} //end get_grad_phi_sq
+} // end get_grad_phi_sq
 
 // set the rhs source for the poisson eqn
 void set_rhs(LevelData<FArrayBox> &a_rhs,
@@ -141,18 +138,6 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
         rhs_box.setVal(0.0, 0);
         Box this_box = rhs_box.box(); // no ghost cells
 
-        /*// calculate the laplacian of psi across the box
-        FArrayBox laplacian_of_psi(this_box, 1);
-        FORT_GETLAPLACIANPSIF(CHF_FRA1(laplacian_of_psi, 0),
-                              CHF_CONST_FRA1(multigrid_vars_box, c_psi),
-                              CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
-
-        // calculate the rho contribution from gradients of phi
-        FArrayBox rho_gradient(this_box, 1);
-        FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
-                            CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
-                            CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
-        */
         FArrayBox phi_fab(Interval(c_phi_0, c_phi_0), multigrid_vars_box);
         FArrayBox psi_fab(Interval(c_psi, c_psi), multigrid_vars_box);
 
@@ -164,8 +149,8 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             get_loc(loc, iv, a_dx, a_params);
 
             // rhs = m/8 psi_0^5 - 2 pi rho_grad psi_0  - laplacian(psi_0)
-            Real m = get_m(multigrid_vars_box(iv, c_phi_0), a_params,
-                           constant_K);
+            Real m =
+                get_m(multigrid_vars_box(iv, c_phi_0), a_params, constant_K);
             Real grad_phi_sq = get_grad_phi_sq(iv, phi_fab, a_dx);
             Real laplacian_of_psi = get_laplacian_psi(iv, psi_fab, a_dx);
 
@@ -181,10 +166,10 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             Real psi_bh = get_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            rhs_box(iv, 0) =
-                0.125 * m * pow(psi_0, 5.0) - 0.125 * A2 * pow(psi_0, -7.0) -
-                M_PI * a_params.G_Newton * grad_phi_sq * psi_0 -
-                laplacian_of_psi;
+            rhs_box(iv, 0) = 0.125 * m * pow(psi_0, 5.0) -
+                             0.125 * A2 * pow(psi_0, -7.0) -
+                             M_PI * a_params.G_Newton * grad_phi_sq * psi_0 -
+                             laplacian_of_psi;
         }
     }
 } // end set_rhs
@@ -207,19 +192,6 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
         integrand_box.setVal(0.0, 0);
         Box this_box = integrand_box.box(); // no ghost cells
 
-        /*
-        // calculate the laplacian of psi across the box
-        FArrayBox laplacian_of_psi(this_box, 1);
-        FORT_GETLAPLACIANPSIF(CHF_FRA1(laplacian_of_psi, 0),
-                              CHF_CONST_FRA1(multigrid_vars_box, c_psi),
-                              CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
-
-        // calculate the rho contribution from gradients of phi
-        FArrayBox rho_gradient(this_box, 1);
-        FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
-                            CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
-                            CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
-        */
         FArrayBox phi_fab(Interval(c_phi_0, c_phi_0), multigrid_vars_box);
         FArrayBox psi_fab(Interval(c_psi, c_psi), multigrid_vars_box);
 
@@ -248,10 +220,10 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             Real psi_bh = get_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            integrand_box(iv, 0) =
-                -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
-                12.0 * M_PI * a_params.G_Newton * grad_phi_sq *
-                pow(psi_0, -4.0) + 12.0 * laplacian_of_psi * pow(psi_0, -5.0);
+            integrand_box(iv, 0) = -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
+                                   12.0 * M_PI * a_params.G_Newton *
+                                       grad_phi_sq * pow(psi_0, -4.0) +
+                                   12.0 * laplacian_of_psi * pow(psi_0, -5.0);
         }
     }
 } // end set_constant_K_integrand
@@ -273,13 +245,6 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
         condition_box.setVal(0.0, 0);
         Box this_box = condition_box.box(); // no ghost cells
 
-        /*
-        // calculate the rho contribution from gradients of phi
-        FArrayBox rho_gradient(this_box, 1);
-        FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
-                            CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
-                            CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
-        */
         FArrayBox phi_fab(Interval(c_phi_0, c_phi_0), multigrid_vars_box);
 
         BoxIterator bit(this_box);
@@ -308,7 +273,7 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
             condition_box(iv, 0) = 1.5 * abs(m) + 1.5 * A2 * pow(psi_0, -7.0) +
                                    12.0 * M_PI * a_params.G_Newton *
-                                   abs(grad_phi_sq) * pow(psi_0, 1.0) +
+                                       abs(grad_phi_sq) * pow(psi_0, 1.0) +
                                    log(psi_0);
         }
     }
@@ -372,13 +337,6 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
         FArrayBox &multigrid_vars_box = a_multigrid_vars[dit()];
         Box this_box = aCoef_box.box();
 
-        /*
-        // calculate the rho contribution from gradients of phi
-        FArrayBox rho_gradient(this_box, 1);
-        FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
-                            CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
-                            CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
-        */
         FArrayBox phi_fab(Interval(c_phi_0, c_phi_0), multigrid_vars_box);
 
         BoxIterator bit(this_box);
@@ -388,8 +346,8 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             RealVect loc;
             get_loc(loc, iv, a_dx, a_params);
             // m(K, phi) = 2/3 K^2 - 16 pi G rho
-            Real m = get_m(multigrid_vars_box(iv, c_phi_0), a_params,
-                           constant_K);
+            Real m =
+                get_m(multigrid_vars_box(iv, c_phi_0), a_params, constant_K);
             Real grad_phi_sq = get_grad_phi_sq(iv, phi_fab, a_dx);
 
             // Also \bar  A_ij \bar A^ij
@@ -403,9 +361,9 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
 
             Real psi_bh = get_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
-            aCoef_box(iv, 0) =
-                -0.625 * m * pow(psi_0, 4.0) - A2 * pow(psi_0, -8.0) +
-                M_PI * a_params.G_Newton * grad_phi_sq;
+            aCoef_box(iv, 0) = -0.625 * m * pow(psi_0, 4.0) -
+                               A2 * pow(psi_0, -8.0) +
+                               M_PI * a_params.G_Newton * grad_phi_sq;
         }
     }
 }
