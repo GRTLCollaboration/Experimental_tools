@@ -61,9 +61,13 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
             loc *= a_dx;
             loc -= a_params.domainLength / 2.0;
 
-            // set phi according to user defined function
+            // set phi and pi according to user defined function. JCAurre TODO: different input params
             multigrid_vars_box(iv, c_phi_0) =
                 my_phi_function(loc, a_params.phi_amplitude,
+                                a_params.phi_wavelength, a_params.domainLength);
+
+			multigrid_vars_box(iv, c_pi_0) =
+                my_pi_function(loc, a_params.phi_amplitude,
                                 a_params.phi_wavelength, a_params.domainLength);
 
             // set Aij for spin and momentum according to BH params
@@ -416,7 +420,8 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
             // Copy phi and Aij across - note this is now \tilde Aij not \bar
             // Aij
             grchombo_vars_box(iv, c_phi) = multigrid_vars_box(iv, c_phi_0);
-            grchombo_vars_box(iv, c_A11) =
+			grchombo_vars_box(iv, c_Pi) = multigrid_vars_box(iv, c_pi_0);
+			grchombo_vars_box(iv, c_A11) =
                 multigrid_vars_box(iv, c_A11_0) * factor;
             grchombo_vars_box(iv, c_A12) =
                 multigrid_vars_box(iv, c_A12_0) * factor;

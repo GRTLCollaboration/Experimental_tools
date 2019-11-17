@@ -20,6 +20,8 @@ enum
 
     c_phi_0, // matter field
 
+	c_pi_0,
+
     NUM_MULTIGRID_VARS
 };
 
@@ -30,7 +32,7 @@ static constexpr char const *variable_names[NUM_MULTIGRID_VARS] = {
 
     "A11_0", "A12_0", "A13_0", "A22_0", "A23_0", "A33_0",
 
-    "phi_0"};
+    "phi_0", "pi_0"};
 }
 
 #endif /* MULTIGRIDUSERVARIABLES_HPP */
