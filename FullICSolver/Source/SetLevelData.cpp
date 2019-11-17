@@ -129,7 +129,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            rhs_box(iv, 0) =
+            rhs_box(iv, c_psi) =
                 0.125 * m * pow(psi_0, 5.0) - 0.125 * A2 * pow(psi_0, -7.0) -
                 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) * psi_0 -
                 laplacian_of_psi(iv, 0);
@@ -286,8 +286,14 @@ void set_update_psi0(LevelData<FArrayBox> &a_multigrid_vars,
         for (bit.begin(); bit.ok(); ++bit)
         {
             IntVect iv = bit();
-            multigrid_vars_box(iv, c_psi) += dpsi_box(iv, 0);
-        }
+            multigrid_vars_box(iv, c_psi_0) += dpsi_box(iv, c_psi); //JCAurre changed c_psi to c_psi_0 and 0 to c_psi
+
+			//JCAurre: update constraint variables
+            multigrid_vars_box(iv, c_U_0) += dpsi_box(iv, c_U);
+            multigrid_vars_box(iv, c_V0_0) += dpsi_box(iv, c_V0);
+            multigrid_vars_box(iv, c_V1_0) += dpsi_box(iv, c_V1);
+            multigrid_vars_box(iv, c_V2_0) += dpsi_box(iv, c_V2);
+		}
     }
 }
 
