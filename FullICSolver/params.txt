@@ -14,9 +14,9 @@ beta  = -1.0
 
 # AMR grid params - grid length and number of cells by direction
 L = 100.0
-N = 64 64 64
+N = 16 16 16
 # number of AMR refinement levels is max_level + 1
-max_level    = 6
+max_level    = 1
 # Threshold for AMR refinement, based on magnitude of rhs
 refine_threshold = 0.1
 #min box size
@@ -66,19 +66,19 @@ phi_wavelength = 1
 # if you don't want BHs just set masses to zero
 
 #BH1
-bh1_bare_mass = 0.5
+bh1_bare_mass = 0.0
 # spin about z axis (this is J_z)
-bh1_spin = 0.1
+bh1_spin = 0.0
 # boost in y direction (this is P_y)
-bh1_momentum = 0.05
+bh1_momentum = 0.0
 # offset from center in x direction
 bh1_offset = 10.0
 
 #BH2
-bh2_bare_mass = 0.5
+bh2_bare_mass = 0.0
 # spin about z axis (this is J_z)
-bh2_spin = 0.1
+bh2_spin = 0.0
 # boost in y direction (this is P_y)
-bh2_momentum = -0.05
+bh2_momentum = -0.0
 # offset from center in x direction
 bh2_offset = -10.0
