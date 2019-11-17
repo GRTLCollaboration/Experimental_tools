@@ -133,6 +133,13 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
                 0.125 * m * pow(psi_0, 5.0) - 0.125 * A2 * pow(psi_0, -7.0) -
                 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) * psi_0 -
                 laplacian_of_psi(iv, 0);
+
+			//JCAurre: Added rhs for new constraint variables. for now, set to zero
+            rhs_box(iv, c_U)  = 0;
+            rhs_box(iv, c_V0) = 0;
+            rhs_box(iv, c_V1) = 0;
+            rhs_box(iv, c_V2) = 0;
+
         }
     }
 } // end set_rhs
