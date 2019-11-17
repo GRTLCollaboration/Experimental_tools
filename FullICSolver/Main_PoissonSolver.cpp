@@ -220,7 +220,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
         // check if converged or diverging and if so exit NL iteration for loop
         dpsi_norm = computeNorm(dpsi, a_params.refRatio, a_params.coarsestDx,
-                                Interval(0, 0));
+                                Interval(0, NUM_CONSTRAINTS_VARS));   //TODO JCAurre: not completely sure
         pout() << "The norm of dpsi after step " << NL_iter + 1 << " is "
                << dpsi_norm << endl;
         if (dpsi_norm < tolerance || dpsi_norm > 1e5)
