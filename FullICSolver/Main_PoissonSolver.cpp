@@ -81,14 +81,14 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
     {
         multigrid_vars[ilev] =
             new LevelData<FArrayBox>(a_grids[ilev], NUM_MULTIGRID_VARS, ghosts);
-        dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
-        rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
+        dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, ghosts);
+        rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero);
         integrand[ilev] =
-            new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
+            new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero);
         aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
-            new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
+            new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero));
         bCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
-            new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
+            new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero));
         vectDomains[ilev] = domLev;
         vectDx[ilev] = dxLev;
         // set initial guess for psi and zero dpsi
