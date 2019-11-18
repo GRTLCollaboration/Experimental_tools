@@ -75,17 +75,17 @@ void set_binary_bh_Aij(FArrayBox &multigrid_vars_box, const IntVect &iv,
     RealVect P2 = {0.0, a_params.bh2_momentum, 0.0};
 
     // set the Aij vars
-    multigrid_vars_box(iv, c_A11_0) =
+    multigrid_vars_box(iv, c_A11_0) +=
         get_Aij(0, 0, rbh1, rbh2, n1, n2, J1, J2, P1, P2, a_params);
-    multigrid_vars_box(iv, c_A22_0) =
+    multigrid_vars_box(iv, c_A22_0) +=
         get_Aij(1, 1, rbh1, rbh2, n1, n2, J1, J2, P1, P2, a_params);
-    multigrid_vars_box(iv, c_A33_0) =
+    multigrid_vars_box(iv, c_A33_0) +=
         get_Aij(2, 2, rbh1, rbh2, n1, n2, J1, J2, P1, P2, a_params);
-    multigrid_vars_box(iv, c_A12_0) =
+    multigrid_vars_box(iv, c_A12_0) +=
         get_Aij(0, 1, rbh1, rbh2, n1, n2, J1, J2, P1, P2, a_params);
-    multigrid_vars_box(iv, c_A13_0) =
+    multigrid_vars_box(iv, c_A13_0) +=
         get_Aij(0, 2, rbh1, rbh2, n1, n2, J1, J2, P1, P2, a_params);
-    multigrid_vars_box(iv, c_A23_0) =
+    multigrid_vars_box(iv, c_A23_0) +=
         get_Aij(1, 2, rbh1, rbh2, n1, n2, J1, J2, P1, P2, a_params);
 }
 
@@ -130,5 +130,24 @@ void set_Wvector(FArrayBox &multigrid_vars_box, const Box &a_b, const RealVect &
                                                                         + loc[1]*a_grad_multigrid(iv,3*c_V1_0 + 2)
                                                                         + loc[2]*a_grad_multigrid(iv,3*c_V2_0 + 2));
     }
+}
+
+void set_Aij_0(FArrayBox &multigrid_vars_box, const IntVect &iv, const RealVect &loc, 
+                        const RealVect &a_dx, const PoissonParameters &a_params, const FArrayBox &a_grad_multigrid)
+{
+
+    Real trace = a_grad_multigrid(iv,3*c_W0_0 + 0) + a_grad_multigrid(iv,3*c_W1_0 + 1) + a_grad_multigrid(iv,3*c_W2_0 + 2);
+    multigrid_vars_box(iv, c_A11_0) = 2.*a_grad_multigrid(iv,3*c_W0_0 + 0) - 2./3.*trace;
+
+    multigrid_vars_box(iv, c_A22_0) = 2.*a_grad_multigrid(iv,3*c_W1_0 + 1) - 2./3.*trace; 
+
+    multigrid_vars_box(iv, c_A33_0) = 2.*a_grad_multigrid(iv,3*c_W2_0 + 2) - 2./3.*trace;
+
+    multigrid_vars_box(iv, c_A12_0) = a_grad_multigrid(iv,3*c_W1_0 + 0) + a_grad_multigrid(iv,3*c_W0_0 + 1);
+
+    multigrid_vars_box(iv, c_A13_0) = a_grad_multigrid(iv,3*c_W2_0 + 0) + a_grad_multigrid(iv,3*c_W0_0 + 2);
+
+    multigrid_vars_box(iv, c_A23_0) = a_grad_multigrid(iv,3*c_W2_0 + 1) + a_grad_multigrid(iv,3*c_W1_0 + 2);
+
 }
 #endif /* SETBINARYBH_HPP */

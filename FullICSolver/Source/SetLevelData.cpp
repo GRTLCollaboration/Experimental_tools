@@ -107,9 +107,12 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
                 my_pi_function(loc, a_params.phi_amplitude,
                                 a_params.phi_wavelength, a_params.domainLength);
 
-            // set Aij for spin and momentum according to BH params
-            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
-        }
+			//JCAurre: set Aij from components of vector W
+			set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, *grad_multigrid);
+
+			//add the Aij for spin and momentum according to BH params. JCAurre: function now is = -> +=
+			set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
+		}
     }
 } // end set_initial_conditions
 
