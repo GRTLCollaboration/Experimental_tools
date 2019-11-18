@@ -88,7 +88,6 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
         variable_names[2*NUM_CONSTRAINTS_VARS + icomp] =
             MultigridUserVariables::variable_names[icomp];
     }
-
     // check the domain sizes are the same
     CH_assert(a_dpsi.size() == a_rhs.size());
     CH_assert(a_dpsi.size() == a_multigrid_vars.size());
@@ -99,7 +98,7 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
         tempData[level] = new LevelData<FArrayBox>(a_grids[level], totalComp);
         Interval dpsiComps(0, NUM_CONSTRAINTS_VARS-1);
         Interval rhsComps(NUM_CONSTRAINTS_VARS, 2*NUM_CONSTRAINTS_VARS-1);
-        Interval mgComps(2*NUM_CONSTRAINTS_VARS,2*NUM_CONSTRAINTS_VARS + NUM_MULTIGRID_VARS + 1);
+        Interval mgComps(2*NUM_CONSTRAINTS_VARS,2*NUM_CONSTRAINTS_VARS + NUM_MULTIGRID_VARS - 1);
         a_dpsi[level]->copyTo(a_dpsi[level]->interval(), *tempData[level],
                               dpsiComps);
         a_rhs[level]->copyTo(a_rhs[level]->interval(), *tempData[level],
@@ -107,14 +106,13 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
         a_multigrid_vars[level]->copyTo(a_multigrid_vars[level]->interval(),
                                         *tempData[level], mgComps);
     }
-
+	pout() << "works2?" << endl;
     Real fakeTime = iter * 1.0;
     Real fakeDt = 1.0;
     WriteAMRHierarchyHDF5(fileName, a_grids, tempData, variable_names,
                           a_params.coarsestDomain.domainBox(),
                           a_params.coarsestDx, fakeDt, fakeTime,
                           a_params.refRatio, a_params.numLevels);
-
     // clean up temporary storage
     for (int level = 0; level < a_dpsi.size(); level++)
     {
