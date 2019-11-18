@@ -14,9 +14,9 @@ beta  = -1.0
 
 # AMR grid params - grid length and number of cells by direction
 L = 100.0
-N = 16 16 16
+N = 8 8 8
 # number of AMR refinement levels is max_level + 1
-max_level    = 1
+max_level    = 0
 # Threshold for AMR refinement, based on magnitude of rhs
 refine_threshold = 0.1
 #min box size
@@ -44,7 +44,7 @@ coefficient_average_type = harmonic
 
 # Boundary conditions for domain-boundary faces 
 # 0 for non periodic, 1 for periodic (enforces same for all)
-is_periodic = 0
+is_periodic = 1
 # if not periodic, then what?
 # 1 -> const Neumann (gradient), 0 -> const Dirichlet (value)
 bc_lo       = 0 0 0

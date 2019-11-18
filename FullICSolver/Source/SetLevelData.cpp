@@ -53,8 +53,22 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
             // for the BHs - this is added at the output data stage
             // and when we calculate psi_0 in the rhs etc
             // as it already satisfies Laplacian(psi) = 0
-            multigrid_vars_box(iv, c_psi) = 1.0;
-            dpsi_box(iv, 0) = 0.0;
+            multigrid_vars_box(iv, c_psi_0) = 1.0;
+            dpsi_box(iv, c_psi) = 0.0;
+
+            // JCAurre: initialized the new variables and the linear solutions
+            dpsi_box(iv, c_U)  = 0.0;
+            dpsi_box(iv, c_V0) = 0.0;
+            dpsi_box(iv, c_V1) = 0.0;
+            dpsi_box(iv, c_V2) = 0.0;
+
+            multigrid_vars_box(iv, c_U_0)  = 1.0;
+            multigrid_vars_box(iv, c_V0_0) = 1.0;
+            multigrid_vars_box(iv, c_V1_0) = 1.0;
+            multigrid_vars_box(iv, c_V2_0) = 1.0;
+            multigrid_vars_box(iv, c_W0_0) = 0.0;
+            multigrid_vars_box(iv, c_W1_0) = 0.0;
+            multigrid_vars_box(iv, c_W2_0) = 0.0;
 
             // set the phi value - need the distance from centre
             RealVect loc(iv + 0.5 * RealVect::Unit);
