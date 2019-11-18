@@ -167,17 +167,15 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
             set_rhs(*rhs[ilev], *multigrid_vars[ilev], vectDx[ilev], a_params,
                     constant_K);
         }
-
         // set up solver factory
         RefCountedPtr<AMRLevelOpFactory<LevelData<FArrayBox>>> opFactory =
             RefCountedPtr<AMRLevelOpFactory<LevelData<FArrayBox>>>(
                 defineOperatorFactory(a_grids, vectDomains, aCoef, bCoef,
                                       a_params));
-
+    
         // define the multi level operator
         mlOp.define(a_grids, a_params.refRatio, vectDomains, vectDx, opFactory,
                     lBase);
-
         // set the more solver params
         bool homogeneousBC = false;
         solver.define(&mlOp, homogeneousBC);
@@ -220,7 +218,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
         // check if converged or diverging and if so exit NL iteration for loop
         dpsi_norm = computeNorm(dpsi, a_params.refRatio, a_params.coarsestDx,
-                                Interval(0, NUM_CONSTRAINTS_VARS));   //TODO JCAurre: not completely sure
+                                Interval(0, 0));   //TODO JCAurre: not completely sure
         pout() << "The norm of dpsi after step " << NL_iter + 1 << " is "
                << dpsi_norm << endl;
         if (dpsi_norm < tolerance || dpsi_norm > 1e5)
@@ -297,14 +295,14 @@ int main(int argc, char *argv[])
         PoissonParameters params;
         Vector<DisjointBoxLayout> grids;
 
-        // read params from file
+		// read params from file
         getPoissonParameters(params);
 
-        // set up the grids, using the rhs for tagging to decide
+		// set up the grids, using the rhs for tagging to decide
         // where needs additional levels
         set_grids(grids, params);
 
-        // Solve the equations!
+		// Solve the equations!
         status = poissonSolve(grids, params);
 
     } // End scoping trick

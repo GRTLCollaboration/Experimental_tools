@@ -213,12 +213,17 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            integrand_box(iv, 0) =
+            integrand_box(iv, c_psi) =
                 -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
                 24.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) *
                     pow(psi_0, -4.0) +
                 12.0 * laplacian_of_psi(iv, 0) * pow(psi_0, -5.0);
-        }
+
+			integrand_box(iv, c_U) = 0;
+			integrand_box(iv, c_V0)= 0;
+			integrand_box(iv, c_V1)= 0;
+			integrand_box(iv, c_V2)= 0;
+		}
     }
 } // end set_constant_K_integrand
 
@@ -275,7 +280,13 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
                                        abs(rho_gradient(iv, 0)) *
                                        pow(psi_0, 1.0) +
                                    log(psi_0);
-        }
+
+			condition_box(iv, c_U) = 0.;
+			condition_box(iv, c_V0) = 0.;
+			condition_box(iv, c_V1) = 0.;
+			condition_box(iv, c_V2) = 0.;
+
+		}
     }
 } // end set_regrid_condition
 
@@ -372,7 +383,7 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
 
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
-            aCoef_box(iv, c_psi) =
+            aCoef_box(iv, 0) =
                 -0.625 * m * pow(psi_0, 4.0) - A2 * pow(psi_0, -8.0) +
                 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0);
 
@@ -398,7 +409,7 @@ void set_b_coef(LevelData<FArrayBox> &a_bCoef,
     for (DataIterator dit = a_bCoef.dataIterator(); dit.ok(); ++dit)
     {
         FArrayBox &bCoef_box = a_bCoef[dit()];
-        //JCAurre: Loop to set bCoef=1 for all constraint variables
+		//JCAurre: Loop to set bCoef=1 for all constraint variables
         for (int iconstraint = 0; iconstraint < NUM_CONSTRAINTS_VARS ; iconstraint++)
         {                                                                                                                                                                                                          
             bCoef_box.setVal(1.0, iconstraint);
