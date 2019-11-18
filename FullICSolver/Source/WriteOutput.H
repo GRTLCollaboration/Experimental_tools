@@ -106,14 +106,13 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
         a_multigrid_vars[level]->copyTo(a_multigrid_vars[level]->interval(),
                                         *tempData[level], mgComps);
     }
-	pout() << "works2?" << endl;
     Real fakeTime = iter * 1.0;
     Real fakeDt = 1.0;
     WriteAMRHierarchyHDF5(fileName, a_grids, tempData, variable_names,
                           a_params.coarsestDomain.domainBox(),
                           a_params.coarsestDx, fakeDt, fakeTime,
                           a_params.refRatio, a_params.numLevels);
-    // clean up temporary storage
+	// clean up temporary storage
     for (int level = 0; level < a_dpsi.size(); level++)
     {
         delete tempData[level];
