@@ -69,15 +69,23 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
     int nRhsComp = a_rhs[0]->nComp();
     int nMGComp = a_multigrid_vars[0]->nComp();
     int totalComp = ndpsiComp + nRhsComp + nMGComp;
-    CH_assert(totalComp == 2 + NUM_MULTIGRID_VARS);
+	CH_assert(totalComp == 2*NUM_CONSTRAINTS_VARS + NUM_MULTIGRID_VARS);
 
     // set names
     Vector<string> variable_names(totalComp);
-    variable_names[0] = "dpsi";
-    variable_names[1] = "rhs";
-    for (int icomp = 0; icomp < NUM_MULTIGRID_VARS; icomp++)
+    variable_names[0] = "dpsi0";        //JCAurre: name for the rhs and linear solution of constraints
+    variable_names[1] = "dpsi1";
+    variable_names[2] = "dpsi2";
+    variable_names[3] = "dpsi3";
+    variable_names[4] = "dpsi4";
+    variable_names[5] = "rhs0";
+    variable_names[6] = "rhs1";
+    variable_names[7] = "rhs2";
+    variable_names[8] = "rhs3";
+    variable_names[9] = "rhs4";
+	for (int icomp = 0; icomp < NUM_MULTIGRID_VARS; icomp++)
     {
-        variable_names[2 + icomp] =
+        variable_names[2*NUM_CONSTRAINTS_VARS + icomp] =
             MultigridUserVariables::variable_names[icomp];
     }
 
@@ -89,9 +97,9 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
     for (int level = 0; level < a_dpsi.size(); level++)
     {
         tempData[level] = new LevelData<FArrayBox>(a_grids[level], totalComp);
-        Interval dpsiComps(0, 0);
-        Interval rhsComps(1, 1);
-        Interval mgComps(2, NUM_MULTIGRID_VARS + 1);
+        Interval dpsiComps(0, NUM_CONSTRAINTS_VARS-1);
+        Interval rhsComps(NUM_CONSTRAINTS_VARS, 2*NUM_CONSTRAINTS_VARS-1);
+        Interval mgComps(2*NUM_CONSTRAINTS_VARS,2*NUM_CONSTRAINTS_VARS + NUM_MULTIGRID_VARS + 1);
         a_dpsi[level]->copyTo(a_dpsi[level]->interval(), *tempData[level],
                               dpsiComps);
         a_rhs[level]->copyTo(a_rhs[level]->interval(), *tempData[level],
