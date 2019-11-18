@@ -16,6 +16,7 @@
 #include "PoissonParameters.H"
 #include "SetBinaryBH.H"
 #include "SetLevelDataF_F.H"
+#include "SetLevelDataCpp.H"
 #include "VariableCoeffPoissonOperatorFactory.H"
 #include "computeNorm.H"
 #include "parstream.H"
@@ -69,6 +70,28 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
             multigrid_vars_box(iv, c_W0_0) = 0.0;
             multigrid_vars_box(iv, c_W1_0) = 0.0;
             multigrid_vars_box(iv, c_W2_0) = 0.0;
+		}
+
+		//JCAurre: out of the box loop so that there are no race condition problems
+		FArrayBox *grad_multigrid = new FArrayBox(b,3*NUM_MULTIGRID_VARS);
+//    	grad_multigrid.setVal(0.0);
+    	get_grad(b, multigrid_vars_box, c_U_0, a_dx, *grad_multigrid,a_params); 
+        get_grad(b, multigrid_vars_box, c_V0_0, a_dx, *grad_multigrid,a_params);
+        get_grad(b, multigrid_vars_box, c_V1_0, a_dx, *grad_multigrid,a_params);
+        get_grad(b, multigrid_vars_box, c_V2_0, a_dx, *grad_multigrid,a_params);
+
+		//JCAurre: Compute W0, W1 and W2 components and its gradients
+		set_Wvector(multigrid_vars_box, b, a_dx, a_params, *grad_multigrid);
+        get_grad(b, multigrid_vars_box, c_W0_0, a_dx, *grad_multigrid,a_params);
+        get_grad(b, multigrid_vars_box, c_W1_0, a_dx, *grad_multigrid,a_params);
+        get_grad(b, multigrid_vars_box, c_W2_0, a_dx, *grad_multigrid,a_params);
+
+		//reopen the loop
+		for (bit.begin(); bit.ok(); ++bit)
+		{
+
+			// work out location on the grid
+            IntVect iv = bit();
 
             // set the phi value - need the distance from centre
             RealVect loc(iv + 0.5 * RealVect::Unit);
