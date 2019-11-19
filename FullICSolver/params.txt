@@ -14,7 +14,7 @@ beta  = -1.0
 
 # AMR grid params - grid length and number of cells by direction
 L = 32
-N = 64 64 64
+N = 32 32 32
 # number of AMR refinement levels is max_level + 1
 max_level    = 0
 # Threshold for AMR refinement, based on magnitude of rhs
@@ -59,7 +59,7 @@ G_Newton = 1.0
 # scalar field input params
 phi_amplitude = 0.1
 phi_wavelength = 1
-pi_amplitude = 0.01
+pi_amplitude = 0.1
 pi_wavelength = 1
 
 # initial conditions for Binary BH spacetimes

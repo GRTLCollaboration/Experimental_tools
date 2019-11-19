@@ -202,7 +202,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
             {
                 QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev - 1],
                                      vectDx[ilev][0], a_params.refRatio[ilev],
-                                     1, vectDomains[ilev]);
+                                     NUM_CONSTRAINTS_VARS, vectDomains[ilev]);
                 quadCFI.coarseFineInterp(*dpsi[ilev], *dpsi[ilev - 1]);
             }
 

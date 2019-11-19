@@ -398,7 +398,7 @@ void set_update_psi0(LevelData<FArrayBox> &a_multigrid_vars,
             multigrid_vars_box(iv, c_psi_0) += dpsi_box(iv, c_psi); //JCAurre changed c_psi to c_psi_0 and 0 to c_psi
 
 			//JCAurre: update constraint variables
-            multigrid_vars_box(iv, c_U_0) += dpsi_box(iv, c_U);
+            multigrid_vars_box(iv, c_U_0)  += dpsi_box(iv, c_U);
             multigrid_vars_box(iv, c_V0_0) += dpsi_box(iv, c_V0);
             multigrid_vars_box(iv, c_V1_0) += dpsi_box(iv, c_V1);
             multigrid_vars_box(iv, c_V2_0) += dpsi_box(iv, c_V2);
