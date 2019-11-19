@@ -38,6 +38,8 @@ void getPoissonParameters(PoissonParameters &a_params)
     pp.get("G_Newton", a_params.G_Newton);
     pp.get("phi_amplitude", a_params.phi_amplitude);
     pp.get("phi_wavelength", a_params.phi_wavelength);
+    pp.get("pi_amplitude", a_params.pi_amplitude);
+    pp.get("pi_wavelength", a_params.pi_wavelength);
 
     if (abs(a_params.phi_amplitude) > 0.0)
     {

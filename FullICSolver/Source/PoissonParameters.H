@@ -49,6 +49,8 @@ class PoissonParameters
     Real G_Newton;
     Real phi_amplitude;
     Real phi_wavelength;
+    Real pi_amplitude;
+    Real pi_wavelength;
     Real bh1_bare_mass;
     Real bh2_bare_mass;
     Real bh1_spin;
