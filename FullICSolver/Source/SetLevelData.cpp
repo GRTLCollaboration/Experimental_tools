@@ -73,18 +73,18 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
 		}
 
 		//JCAurre: out of the box loop so that there are no race condition problems
-		FArrayBox *grad_multigrid = new FArrayBox(b,3*NUM_MULTIGRID_VARS);
-//    	grad_multigrid.setVal(0.0);
-    	get_grad(b, multigrid_vars_box, c_U_0, a_dx, *grad_multigrid,a_params); 
-        get_grad(b, multigrid_vars_box, c_V0_0, a_dx, *grad_multigrid,a_params);
-        get_grad(b, multigrid_vars_box, c_V1_0, a_dx, *grad_multigrid,a_params);
-        get_grad(b, multigrid_vars_box, c_V2_0, a_dx, *grad_multigrid,a_params);
+		FArrayBox grad_multigrid(b,3*NUM_MULTIGRID_VARS);
+    	grad_multigrid.setVal(0.0);
+    	get_grad(b, multigrid_vars_box, c_U_0, a_dx, grad_multigrid,a_params); 
+        get_grad(b, multigrid_vars_box, c_V0_0, a_dx, grad_multigrid,a_params);
+        get_grad(b, multigrid_vars_box, c_V1_0, a_dx, grad_multigrid,a_params);
+        get_grad(b, multigrid_vars_box, c_V2_0, a_dx, grad_multigrid,a_params);
 
 		//JCAurre: Compute W0, W1 and W2 components and its gradients
-		set_Wvector(multigrid_vars_box, b, a_dx, a_params, *grad_multigrid);
-        get_grad(b, multigrid_vars_box, c_W0_0, a_dx, *grad_multigrid,a_params);
-        get_grad(b, multigrid_vars_box, c_W1_0, a_dx, *grad_multigrid,a_params);
-        get_grad(b, multigrid_vars_box, c_W2_0, a_dx, *grad_multigrid,a_params);
+		set_Wvector(multigrid_vars_box, b, a_dx, a_params, grad_multigrid);
+        get_grad(b, multigrid_vars_box, c_W0_0, a_dx, grad_multigrid,a_params);
+        get_grad(b, multigrid_vars_box, c_W1_0, a_dx, grad_multigrid,a_params);
+        get_grad(b, multigrid_vars_box, c_W2_0, a_dx, grad_multigrid,a_params);
 
 		//reopen the loop
 		for (bit.begin(); bit.ok(); ++bit)
@@ -108,7 +108,7 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
                                 a_params.phi_wavelength, a_params.domainLength);
 
 			//JCAurre: set Aij from components of vector W
-			set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, *grad_multigrid);
+			set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
 
 			//add the Aij for spin and momentum according to BH params. JCAurre: function now is = -> +=
 			set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
@@ -144,6 +144,34 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
                             CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
+/*        // calculate the laplacion of U and V_i
+        FArrayBox laplacian_of_U(this_box, 1);
+        FORT_GETLAPLACIANUF(CHF_FRA1(laplacian_of_U, 0),
+                              CHF_CONST_FRA1(multigrid_vars_box, c_U),
+                              CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+        FArrayBox laplacian_of_V(this_box, 1);
+        FORT_GETLAPLACIANV_IF(CHF_FRA(laplacian_of_V),
+                              CHF_CONST_FRA(multigrid_vars_box),
+                              CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+*/
+		FArrayBox laplace_multigrid(this_box,NUM_CONSTRAINTS_VARS);
+        get_laplacian(this_box, multigrid_vars_box, c_U_0, a_dx, laplace_multigrid,a_params);
+        get_laplacian(this_box, multigrid_vars_box, c_V0_0, a_dx, laplace_multigrid,a_params);
+        get_laplacian(this_box, multigrid_vars_box, c_V1_0, a_dx, laplace_multigrid,a_params);
+        get_laplacian(this_box, multigrid_vars_box, c_V2_0, a_dx, laplace_multigrid,a_params); 
+
+		FArrayBox grad_multigrid(this_box,3*NUM_MULTIGRID_VARS);
+        get_grad(this_box, multigrid_vars_box, c_phi_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_U_0, a_dx, grad_multigrid,a_params);                                                                                                                             
+        get_grad(this_box, multigrid_vars_box, c_V0_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V1_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V2_0, a_dx, grad_multigrid,a_params);
+
+        set_Wvector(multigrid_vars_box, this_box, a_dx, a_params, grad_multigrid);
+        get_grad(this_box, multigrid_vars_box, c_W0_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_W1_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_W2_0, a_dx, grad_multigrid,a_params);
+
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
         {
@@ -156,6 +184,11 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             Real m = 0;
             set_m_value(m, multigrid_vars_box(iv, c_phi_0), a_params,
                         constant_K);
+
+			//JCAurre: new variables for mom
+			Real pi_0 = multigrid_vars_box(iv,c_pi_0);
+//            set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
+//            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -170,16 +203,16 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
             rhs_box(iv, c_psi) =
-                0.125 * m * pow(psi_0, 5.0) - 0.125 * A2 * pow(psi_0, -7.0) -
+                0.125 * (m + 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0)) * pow(psi_0, 5.0) - 0.125 * A2 * pow(psi_0, -7.0) -                                                                                         
                 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) * psi_0 -
                 laplacian_of_psi(iv, 0);
 
-			//JCAurre: Added rhs for new constraint variables. for now, set to zero
-            rhs_box(iv, c_U)  = 0;
-            rhs_box(iv, c_V0) = 0;
-            rhs_box(iv, c_V1) = 0;
-            rhs_box(iv, c_V2) = 0;
-
+			//JCAurre: Added rhs for new constraint variables.
+            rhs_box(iv, c_U)  = 0;//-8.0*M_PI*pow(psi_0, 10.0)*pi_0*(loc[0]*grad_multigrid(iv,3*c_phi_0 + 0) + loc[1]*grad_multigrid(iv,3*c_phi_0 + 1)
+                                  //+ loc[2]*grad_multigrid(iv,3*c_phi_0 + 2)) - laplacian_of_U(iv,0);
+            rhs_box(iv, c_V0) = 0;//8.0*M_PI*pow(psi_0, 10.0)*pi_0*grad_multigrid(iv,3*c_phi_0 + 0) - laplacian_of_V(iv,0);
+            rhs_box(iv, c_V1) = 0;//8.0*M_PI*pow(psi_0, 10.0)*pi_0*grad_multigrid(iv,3*c_phi_0 + 1) - laplacian_of_V(iv,1);
+            rhs_box(iv, c_V2) = 0;//8.0*M_PI*pow(psi_0, 10.0)*pi_0*grad_multigrid(iv,3*c_phi_0 + 2) - laplacian_of_V(iv,2);
         }
     }
 } // end set_rhs
@@ -214,6 +247,18 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
                             CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
+/*        FArrayBox grad_multigrid(this_box,3*NUM_MULTIGRID_VARS);
+        get_grad(this_box, multigrid_vars_box, c_phi_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_U_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V0_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V1_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V2_0, a_dx, grad_multigrid,a_params);
+
+        set_Wvector(multigrid_vars_box, this_box, a_dx, a_params, grad_multigrid);
+        get_grad(this_box, multigrid_vars_box, c_W0_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_W1_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_W2_0, a_dx, grad_multigrid,a_params);
+*/
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
         {
@@ -227,6 +272,11 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             Real m = 0;
             set_m_value(m, multigrid_vars_box(iv, c_phi_0), a_params, 0.0);
 
+            //JCAurre: new variables for mom
+            Real pi_0 = multigrid_vars_box(iv,c_pi_0);
+//	        set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
+//            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
+
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
             A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
@@ -239,8 +289,8 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            integrand_box(iv, c_psi) =
-                -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
+            integrand_box(iv, 0) =
+                -1.5 * (m + 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0)) + 1.5 * A2 * pow(psi_0, -12.0) +                                                                                                             
                 24.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) *
                     pow(psi_0, -4.0) +
                 12.0 * laplacian_of_psi(iv, 0) * pow(psi_0, -5.0);
@@ -276,6 +326,18 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
                             CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
+/*        FArrayBox grad_multigrid(this_box,3*NUM_MULTIGRID_VARS); 
+        get_grad(this_box, multigrid_vars_box, c_phi_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_U_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V0_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V1_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V2_0, a_dx, grad_multigrid,a_params);
+
+        set_Wvector(multigrid_vars_box, this_box, a_dx, a_params, grad_multigrid);
+        get_grad(this_box, multigrid_vars_box, c_W0_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_W1_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_W2_0, a_dx, grad_multigrid,a_params);
+*/
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
         {
@@ -287,6 +349,11 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             // calculate contributions
             Real m = 0;
             set_m_value(m, multigrid_vars_box(iv, c_phi_0), a_params, 0.0);
+
+            //JCAurre: new variables for mom
+            Real pi_0 = multigrid_vars_box(iv,c_pi_0);
+//            set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
+//            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -301,7 +368,8 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             // value of the contributions and add in BH criteria
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
-            condition_box(iv, 0) = 1.5 * abs(m) + 1.5 * A2 * pow(psi_0, -7.0) +
+
+            condition_box(iv, 0) = 1.5 * abs((m + 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0))) + 1.5 * A2 * pow(psi_0, -7.0) +                                                                                       
                                    24.0 * M_PI * a_params.G_Newton *
                                        abs(rho_gradient(iv, 0)) *
                                        pow(psi_0, 1.0) +
@@ -356,9 +424,8 @@ void set_m_value(Real &m, const Real &phi_here,
     // KC TODO:
     // For now rho is just the gradient term which is kept separate
     // ... may want to add V(phi) and phidot/Pi here later though
-    Real Pi_field = 0.0;
     Real V_of_phi = 0.0;
-    Real rho = 0.5 * Pi_field * Pi_field + V_of_phi;
+    Real rho = V_of_phi;
 
     m = (2.0 / 3.0) * (constant_K * constant_K) -
         16.0 * M_PI * a_params.G_Newton * rho;
@@ -386,6 +453,18 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
                             CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
+/*        FArrayBox grad_multigrid(this_box,3*NUM_MULTIGRID_VARS);
+        get_grad(this_box, multigrid_vars_box, c_phi_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_U_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V0_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V1_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_V2_0, a_dx, grad_multigrid,a_params);
+
+        set_Wvector(multigrid_vars_box, this_box, a_dx, a_params, grad_multigrid);
+        get_grad(this_box, multigrid_vars_box, c_W0_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_W1_0, a_dx, grad_multigrid,a_params);
+        get_grad(this_box, multigrid_vars_box, c_W2_0, a_dx, grad_multigrid,a_params);
+*/
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
         {
@@ -398,6 +477,11 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             set_m_value(m, multigrid_vars_box(iv, c_phi_0), a_params,
                         constant_K);
 
+            //JCAurre: new variables for mom
+            Real pi_0 = multigrid_vars_box(iv,c_pi_0);
+//            set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
+            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
+
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
             A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
@@ -409,8 +493,9 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
 
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
-            aCoef_box(iv, 0) =
-                -0.625 * m * pow(psi_0, 4.0) - A2 * pow(psi_0, -8.0) +
+
+            aCoef_box(iv, c_psi) =
+                -0.625 * (m + 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0)) * pow(psi_0, 4.0) - A2 * pow(psi_0, -8.0) +                                                                                                
                 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0);
 
 			//JCAurre: eq is linear so 0 should be fine
