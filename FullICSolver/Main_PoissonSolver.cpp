@@ -216,6 +216,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
                             exchange_copier);
         }
 
+
         // check if converged or diverging and if so exit NL iteration for loop
         dpsi_norm = computeNorm(dpsi, a_params.refRatio, a_params.coarsestDx,
                                 Interval(0, 0));   //TODO JCAurre: not completely sure

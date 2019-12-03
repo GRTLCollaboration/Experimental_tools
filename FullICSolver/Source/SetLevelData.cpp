@@ -177,8 +177,8 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
 
 			//JCAurre: new variables for mom
 			Real pi_0 = multigrid_vars_box(iv,c_pi_0);
-            // set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
-            // set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
+            set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
+            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -264,8 +264,8 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
 
             //JCAurre: new variables for mom
             Real pi_0 = multigrid_vars_box(iv,c_pi_0);
-	        // set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
-            // set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
+	        set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
+            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -342,8 +342,8 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
 
             //JCAurre: new variables for mom
             Real pi_0 = multigrid_vars_box(iv,c_pi_0);
-            // set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
-            // set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
+            set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
+            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -469,8 +469,8 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
 
             //JCAurre: new variables for mom
             Real pi_0 = multigrid_vars_box(iv,c_pi_0);
-            // set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
-            // set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
+            set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid);
+            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
