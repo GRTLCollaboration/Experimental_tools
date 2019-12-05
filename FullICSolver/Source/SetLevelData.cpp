@@ -63,10 +63,10 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
             dpsi_box(iv, c_V1) = 0.0;
             dpsi_box(iv, c_V2) = 0.0;
 
-            multigrid_vars_box(iv, c_U_0)  = 0.0;
-            multigrid_vars_box(iv, c_V0_0) = 0.0;
-            multigrid_vars_box(iv, c_V1_0) = 0.0;
-            multigrid_vars_box(iv, c_V2_0) = 0.0;
+            multigrid_vars_box(iv, c_U_0)  = 1.0;
+            multigrid_vars_box(iv, c_V0_0) = 1.0;
+            multigrid_vars_box(iv, c_V1_0) = 1.0;
+            multigrid_vars_box(iv, c_V2_0) = 1.0;
             multigrid_vars_box(iv, c_W0_0) = 0.0;
             multigrid_vars_box(iv, c_W1_0) = 0.0;
             multigrid_vars_box(iv, c_W2_0) = 0.0;
@@ -145,12 +145,14 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
 		FArrayBox laplace_multigrid(this_box,NUM_CONSTRAINTS_VARS);
-        get_laplacian(this_box, multigrid_vars_box, c_U_0, a_dx, laplace_multigrid,a_params);
-        get_laplacian(this_box, multigrid_vars_box, c_V0_0, a_dx, laplace_multigrid,a_params);
-        get_laplacian(this_box, multigrid_vars_box, c_V1_0, a_dx, laplace_multigrid,a_params);
-        get_laplacian(this_box, multigrid_vars_box, c_V2_0, a_dx, laplace_multigrid,a_params); 
+        get_laplacian(this_box, multigrid_vars_box, c_psi, a_dx, laplace_multigrid,a_params);
+        get_laplacian(this_box, multigrid_vars_box, c_U, a_dx, laplace_multigrid,a_params);
+        get_laplacian(this_box, multigrid_vars_box, c_V0, a_dx, laplace_multigrid,a_params);
+        get_laplacian(this_box, multigrid_vars_box, c_V1, a_dx, laplace_multigrid,a_params);
+        get_laplacian(this_box, multigrid_vars_box, c_V2, a_dx, laplace_multigrid,a_params); 
 
 		FArrayBox grad_multigrid(this_box,3*NUM_MULTIGRID_VARS);
+        get_grad(this_box, multigrid_vars_box, c_psi_0, a_dx, grad_multigrid,a_params);
         get_grad(this_box, multigrid_vars_box, c_phi_0, a_dx, grad_multigrid,a_params);
         get_grad(this_box, multigrid_vars_box, c_U_0, a_dx, grad_multigrid,a_params);                                                                                                                             
         get_grad(this_box, multigrid_vars_box, c_V0_0, a_dx, grad_multigrid,a_params);
@@ -193,16 +195,16 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
             rhs_box(iv, c_psi) =
-                0.125 * (m + 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0)) * pow(psi_0, 5.0) - 0.125 * A2 * pow(psi_0, -7.0) -                                                                                         
+                0.125 * (m - 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0)) * pow(psi_0, 5.0) - 0.125 * A2 * pow(psi_0, -7.0) -                                                                                         
                 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) * psi_0 -
-                laplacian_of_psi(iv, 0);
+                laplace_multigrid(iv, c_psi);
 
 			//JCAurre: Added rhs for new constraint variables.
-            rhs_box(iv, c_U)  = -8.0*M_PI*pow(psi_0, 10.0)*pi_0*(loc[0]*grad_multigrid(iv,3*c_phi_0 + 0) + loc[1]*grad_multigrid(iv,3*c_phi_0 + 1)
+            rhs_box(iv, c_U)  = 8.0*M_PI*pow(psi_0, 0.0)*pi_0*(loc[0]*grad_multigrid(iv,3*c_phi_0 + 0) + loc[1]*grad_multigrid(iv,3*c_phi_0 + 1)
                                 	+ loc[2]*grad_multigrid(iv,3*c_phi_0 + 2)) - laplace_multigrid(iv,c_U);
-            rhs_box(iv, c_V0) = 8.0*M_PI*pow(psi_0, 10.0)*pi_0*grad_multigrid(iv,3*c_phi_0 + 0) - laplace_multigrid(iv,c_V0);
-            rhs_box(iv, c_V1) = 8.0*M_PI*pow(psi_0, 10.0)*pi_0*grad_multigrid(iv,3*c_phi_0 + 1) - laplace_multigrid(iv,c_V1);
-            rhs_box(iv, c_V2) = 8.0*M_PI*pow(psi_0, 10.0)*pi_0*grad_multigrid(iv,3*c_phi_0 + 2) - laplace_multigrid(iv,c_V2);
+            rhs_box(iv, c_V0) = -8.0*M_PI*pow(psi_0, 10.0)*pi_0*grad_multigrid(iv,3*c_phi_0 + 0) - laplace_multigrid(iv,c_V0);
+            rhs_box(iv, c_V1) = -8.0*M_PI*pow(psi_0, 10.0)*pi_0*grad_multigrid(iv,3*c_phi_0 + 1) - laplace_multigrid(iv,c_V1);
+            rhs_box(iv, c_V2) = -8.0*M_PI*pow(psi_0, 10.0)*pi_0*grad_multigrid(iv,3*c_phi_0 + 2) - laplace_multigrid(iv,c_V2);
         }
     }
 } // end set_rhs
@@ -280,7 +282,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
             integrand_box(iv, 0) =
-                -1.5 * (m + 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0)) + 1.5 * A2 * pow(psi_0, -12.0) +                                                                                                             
+                -1.5 * (m - 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0)) + 1.5 * A2 * pow(psi_0, -12.0) +                                                                                                             
                 24.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) *
                     pow(psi_0, -4.0) +
                 12.0 * laplacian_of_psi(iv, 0) * pow(psi_0, -5.0);
@@ -359,7 +361,7 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            condition_box(iv, 0) = 1.5 * abs((m + 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0))) + 1.5 * A2 * pow(psi_0, -7.0) +                                                                                       
+            condition_box(iv, 0) = 1.5 * abs((m - 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0))) + 1.5 * A2 * pow(psi_0, -7.0) +                                                                                       
                                    24.0 * M_PI * a_params.G_Newton *
                                        abs(rho_gradient(iv, 0)) *
                                        pow(psi_0, 1.0) +
@@ -485,7 +487,7 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
             aCoef_box(iv, c_psi) =
-                -0.625 * (m + 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0)) * pow(psi_0, 4.0) - A2 * pow(psi_0, -8.0) +                                                                                                
+                -0.625 * (m - 8.0*M_PI*a_params.G_Newton*pow(pi_0,2.0)) * pow(psi_0, 4.0) - 7./8.*A2 * pow(psi_0, -8.0) +                                                                                                
                 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0);
 
 			//JCAurre: eq is linear so 0 should be fine
