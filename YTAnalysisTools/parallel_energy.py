@@ -1,4 +1,4 @@
-# parallel_L.py
+# parallel_energy.py
 # James Widdicombe
 # Last Updated 16/12/2019
 

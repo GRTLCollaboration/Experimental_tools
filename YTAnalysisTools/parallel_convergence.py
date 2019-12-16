@@ -1,8 +1,7 @@
 # parallel_convergence.py
 # James Widdicombe
 # Last Updated 16/12/2019
-# Calculate Convergence
-# Currently only calculates rho
+# Calculate convergence of rho
 
 # Load the modules
 import yt
@@ -269,7 +268,5 @@ if yt.is_root():
     plt.xlabel("Time $[1/m]$")
     plt.ylim(0, 4.3)
     plt.grid()
-    # plt.legend()
     plt.savefig("convergence_" + str(scheme) + "_average.png", bbox_inches="tight")
     plt.close()
-# np.savetxt('time.out',timedata)_low

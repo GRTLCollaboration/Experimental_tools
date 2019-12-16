@@ -36,8 +36,8 @@ ts = yt.load(data_location)
 
 # Program Parameters
 center = ts[0].domain_right_edge / 2.0
-cutoff = 60
-adjusted_right = int(center[0]) * 2 - cutoff
+adjusted_left = 60
+adjusted_right = int(center[0]) * 2 - adjusted_left
 
 # Define an empty storage dictionary for collecting information
 # in parallel through processing
@@ -46,7 +46,11 @@ storage = {}
 for sto, i in ts.piter(storage=storage):
 
     # All Data
-    ad = i.r[cutoff:adjusted_right, cutoff:adjusted_right, cutoff:adjusted_right]
+    ad = i.r[
+        adjusted_left:adjusted_right,
+        adjusted_left:adjusted_right,
+        adjusted_left:adjusted_right,
+    ]
 
     maxphi = ad.max("phi")
     minphi = ad.min("phi")
