@@ -1,7 +1,6 @@
 # parallel_psi.py
 # James Widdicombe
-# Last Updated 17/10/2018
-# Last Formatted Dec 2019
+# Last Updated 16/12/2019
 # Calculate psi evolution
 
 # Load the modules

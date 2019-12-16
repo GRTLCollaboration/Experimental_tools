@@ -1,7 +1,6 @@
 # parallel_convergence.py
 # James Widdicombe
-# Last Updated 08/10/2018
-# Last Formatted Dec 2019
+# Last Updated 16/12/2019
 # Calculate Convergence
 # Currently only calculates rho
 
@@ -101,14 +100,6 @@ for sto, i in low.piter(storage=storage_low):
     ycoord = (convergence_test_y_point - y0 - (c_layer / 2.0)) / low_res_highest
     zcoord = (convergence_test_z_point - z0 - (c_layer / 2.0)) / low_res_highest
 
-    # print xdata
-    # print ydata
-    # print zdata
-    # print c
-    # print xcoord
-    # print ycoord
-    # print xcoord
-
     data = np.array(low_covering_grid[variable])
     var_low = ndimage.map_coordinates(
         data, [[xcoord], [ycoord], [zcoord]], order=scheme
@@ -141,14 +132,6 @@ for sto, i in medium.piter(storage=storage_medium):
     ycoord = (convergence_test_y_point - y0 - (c_layer / 2.0)) / med_res_highest
     zcoord = (convergence_test_z_point - z0 - (c_layer / 2.0)) / med_res_highest
 
-    # print xdata
-    # print ydata
-    # print zdata
-    # print c
-    # print xcoord
-    # print ycoord
-    # print xcoord
-
     data = np.array(med_covering_grid[variable])
     var_med = ndimage.map_coordinates(
         data, [[xcoord], [ycoord], [zcoord]], order=scheme
@@ -180,14 +163,6 @@ for sto, i in high.piter(storage=storage_high):
     xcoord = (convergence_test_x_point - x0 - (c_layer / 2.0)) / high_res_highest
     ycoord = (convergence_test_y_point - y0 - (c_layer / 2.0)) / high_res_highest
     zcoord = (convergence_test_z_point - z0 - (c_layer / 2.0)) / high_res_highest
-
-    # print xdata
-    # print ydata
-    # print zdata
-    # print c
-    # print xcoord
-    # print ycoord
-    # print xcoord
 
     data = np.array(high_covering_grid[variable])
     var_med = ndimage.map_coordinates(

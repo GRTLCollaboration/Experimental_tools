@@ -1,7 +1,6 @@
 # parallel_line.py
 # James Widdicombe
-# Last Updated 18/10/2018
-# Last Formatted Dec 2019
+# Last Updated 16/12/2019
 # lineout
 
 # Load the modules

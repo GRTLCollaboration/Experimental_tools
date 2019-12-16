@@ -1,7 +1,6 @@
 # parallel_L.py
 # James Widdicombe
-# Last Updated 17/08/2018
-# Last Formatted Dec 2019
+# Last Updated 16/12/2019
 # Calculate L2M and L2H
 
 # Load the modules

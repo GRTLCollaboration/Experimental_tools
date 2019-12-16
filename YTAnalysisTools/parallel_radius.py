@@ -1,7 +1,6 @@
 # parallel_radius.py
 # James Widdicombe
-# Last Updated 20/09/2018
-# Last Formatted Dec 2019
+# Last Updated 16/12/2019
 # Script to calculate radius of an axion star
 
 # Load the modules
@@ -68,14 +67,14 @@ for sto, i in ts.piter(storage=storage):
         x_max_val = x[x_max]
 
         # Create a function that goes to negative when we are below 95% of rho max
-        rhofun = interp1d(
+        rho_func = interp1d(
             x, rho - 0.05 * rho_max, kind=Quality, fill_value="extrapolate"
         )
 
         # Solve the function for where it goes to zero using a best guess past and
         # before the the max value of x
-        x_1 = fsolve(rhofun, float(x[x_max]) - 1)[0]
-        x_2 = fsolve(rhofun, float(x[x_max]) + 1)[0]
+        x_1 = fsolve(rho_func, float(x[x_max]) - 1)[0]
+        x_2 = fsolve(rho_func, float(x[x_max]) + 1)[0]
 
         # Size of the 95% rho in center
         size_x = (x_2 - x_1) / 2.0
@@ -87,14 +86,14 @@ for sto, i in ts.piter(storage=storage):
         rho_max_precise = float(rhoy_precise.max())
         y_max_precise = np.where(rhoy_precise == rho_max_precise)[0][0]
         y_max_val_precise = y_precise[y_max_precise]
-        rhofuny_precise = interp1d(
+        rho_func_y_precise = interp1d(
             y_precise,
             rhoy_precise - 0.05 * rho_max_precise,
             kind=Quality,
             fill_value="extrapolate",
         )
-        y_1_precise = fsolve(rhofuny_precise, float(y_precise[y_max_precise]) - 1)[0]
-        y_2_precise = fsolve(rhofuny_precise, float(y_precise[y_max_precise]) + 1)[0]
+        y_1_precise = fsolve(rho_func_y_precise, float(y_precise[y_max_precise]) - 1)[0]
+        y_2_precise = fsolve(rho_func_y_precise, float(y_precise[y_max_precise]) + 1)[0]
         size_y = (y_2_precise - y_1_precise) / 2.0
     else:
         x_max_val = 0

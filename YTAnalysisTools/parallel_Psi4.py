@@ -1,7 +1,6 @@
 # parallel_Psi4.py
 # James Widdicombe
-# Last Updated 14/08/2018
-# Last Formatted Dec 2019
+# Last Updated 16/12/2019
 # Decomposition of Psi4 into spin weighted spherical harmonics
 # l = 2,3,4
 
