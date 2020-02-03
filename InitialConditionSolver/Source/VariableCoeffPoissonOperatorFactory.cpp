@@ -406,6 +406,6 @@ void VariableCoeffPoissonOperator::finerOperatorChanged(
     // Notify any observers of this change.
     notifyObserversOfChange();
 }
-    //-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 
 #include "NamespaceFooter.H"

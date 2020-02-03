@@ -89,7 +89,7 @@ void set_binary_bh_Aij(FArrayBox &multigrid_vars_box, const IntVect &iv,
         get_Aij(1, 2, rbh1, rbh2, n1, n2, J1, J2, P1, P2, a_params);
 }
 
-Real set_binary_bh_psi(const RealVect &loc, const PoissonParameters &a_params)
+Real get_binary_bh_psi(const RealVect &loc, const PoissonParameters &a_params)
 {
     // the Bowen York params
     Real m1 = a_params.bh1_bare_mass;

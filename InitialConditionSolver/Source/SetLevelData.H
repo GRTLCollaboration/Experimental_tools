@@ -22,10 +22,19 @@ using std::cerr;
 // various functions operating on grids to set up data for initial
 // conditions, spatially dependent coefficients and rhs etc
 
+inline void get_loc(RealVect &a_out_loc, const IntVect &a_iv,
+                    const RealVect &a_dx, const PoissonParameters &a_params);
+
 extern void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
                                    LevelData<FArrayBox> &a_dpsi,
                                    const RealVect &a_dx,
                                    const PoissonParameters &a_params);
+
+inline Real get_laplacian_psi(const IntVect &a_iv, const FArrayBox &a_psi_fab,
+                              const RealVect &a_dx);
+
+inline Real get_grad_phi_sq(const IntVect &a_iv, const FArrayBox &a_phi_fab,
+                            const RealVect &a_dx);
 
 extern void set_rhs(LevelData<FArrayBox> &a_rhs,
                     LevelData<FArrayBox> &a_multigrid_vars,
@@ -42,9 +51,8 @@ extern void set_regrid_condition(LevelData<FArrayBox> &a_condition,
                                  const RealVect &a_dx,
                                  const PoissonParameters &a_params);
 
-extern void set_m_value(Real &m, const Real &phi_here,
-                        const PoissonParameters &a_params,
-                        const Real constant_K);
+extern Real get_m(const Real &phi_here, const PoissonParameters &a_params,
+                  const Real constant_K);
 
 extern void set_a_coef(LevelData<FArrayBox> &a_aCoef,
                        LevelData<FArrayBox> &a_multigrid_vars,

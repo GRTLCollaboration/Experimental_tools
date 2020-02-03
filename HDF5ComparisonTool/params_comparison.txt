@@ -1,2 +1,7 @@
+# HDF5 files to compare
 file_1 = file1.hdf5
 file_2 = file2.hdf5
+
+# level comparison params
+tolerance = 1.0e-15
+abort_limit = 100
