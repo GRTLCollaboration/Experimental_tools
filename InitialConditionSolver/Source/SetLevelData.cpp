@@ -362,7 +362,7 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             Real psi_bh = get_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
             aCoef_box(iv, 0) = -0.625 * m * pow(psi_0, 4.0) -
-                               A2 * pow(psi_0, -8.0) +
+                               0.875 * A2 * pow(psi_0, -8.0) +
                                M_PI * a_params.G_Newton * grad_phi_sq;
         }
     }
