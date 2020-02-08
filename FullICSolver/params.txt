@@ -13,16 +13,16 @@ alpha = 1.0
 beta  = -1.0
 
 # AMR grid params - grid length and number of cells by direction
-L = 64
+L = 16
 N = 64 64 64
 # number of AMR refinement levels is max_level + 1
 max_level    = 0
 # Threshold for AMR refinement, based on magnitude of rhs
-refine_threshold = 0.1
+refine_threshold = 0.8
 #min box size
-block_factor = 4
+block_factor = 8
 #max box size
-max_grid_size = 4
+max_grid_size = 8
 # how aggressively to regrid
 fill_ratio   = 0.5
 buffer_size  = 3
@@ -59,7 +59,7 @@ G_Newton = 1.0
 # scalar field input params
 phi_amplitude = 0.1
 phi_wavelength = 1
-pi_amplitude = 0.000001
+pi_amplitude = 1e-2
 pi_wavelength = 1
 
 # initial conditions for Binary BH spacetimes

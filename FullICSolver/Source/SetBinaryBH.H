@@ -105,49 +105,51 @@ Real set_binary_bh_psi(const RealVect &loc, const PoissonParameters &a_params)
     return m1 / rbh1 + m2 / rbh2;
 }
 
-void set_Wvector(FArrayBox &multigrid_vars_box, const Box &a_b, const RealVect &a_dx, const PoissonParameters &a_params,
-                        const FArrayBox &a_grad_multigrid)
-{
-    BoxIterator bit(a_b);
-    for(bit.begin(); bit.ok(); ++bit)
-    {
-        IntVect iv = bit();
-        // set the phi value - need the distance from centre
-        RealVect loc(iv + 0.5 * RealVect::Unit);
-        loc *= a_dx;
-        loc -= a_params.domainLength / 2.0;
-
-        multigrid_vars_box(iv, c_W0_0) = 7./8.* multigrid_vars_box(iv, c_V0_0) - 1./8.*(a_grad_multigrid(iv,3*c_U_0 + 0) 
-                                                                        + loc[0]*a_grad_multigrid(iv,3*c_V0_0 + 0) 
-                                                                        + loc[1]*a_grad_multigrid(iv,3*c_V1_0 + 0)
-                                                                        + loc[2]*a_grad_multigrid(iv,3*c_V2_0 + 0));
-        multigrid_vars_box(iv, c_W1_0) = 7./8.* multigrid_vars_box(iv, c_V1_0) - 1./8.*(a_grad_multigrid(iv,3*c_U_0 + 1) 
-                                                                        + loc[0]*a_grad_multigrid(iv,3*c_V0_0 + 1) 
-                                                                        + loc[1]*a_grad_multigrid(iv,3*c_V1_0 + 1)
-                                                                        + loc[2]*a_grad_multigrid(iv,3*c_V2_0 + 1));
-        multigrid_vars_box(iv, c_W2_0) = 7./8.* multigrid_vars_box(iv, c_V2_0) - 1./8.*(a_grad_multigrid(iv,3*c_U_0) 
-                                                                        + loc[0]*a_grad_multigrid(iv,3*c_V0_0 + 2) 
-                                                                        + loc[1]*a_grad_multigrid(iv,3*c_V1_0 + 2)
-                                                                        + loc[2]*a_grad_multigrid(iv,3*c_V2_0 + 2));
-    }
-}
 
 void set_Aij_0(FArrayBox &multigrid_vars_box, const IntVect &iv, const RealVect &loc, 
-                        const RealVect &a_dx, const PoissonParameters &a_params, const FArrayBox &a_grad_multigrid)
+                        const RealVect &a_dx, const PoissonParameters &a_params, const FArrayBox &a_grad_multigrid, 
+						const FArrayBox &a_grad_2_multigrid, const FArrayBox &a_grad_mixed_multigrid)
 {
 
-    Real trace = a_grad_multigrid(iv,3*c_W0_0 + 0) + a_grad_multigrid(iv,3*c_W1_0 + 1) + a_grad_multigrid(iv,3*c_W2_0 + 2);
-    multigrid_vars_box(iv, c_A11_0) = 2.*a_grad_multigrid(iv,3*c_W0_0 + 0) - 2./3.*trace;
+    Real trace = 7./8.*(a_grad_multigrid(iv,3*c_V0_0 + 0) + a_grad_multigrid(iv,3*c_V1_0 + 1) + a_grad_multigrid(iv,3*c_V2_0 + 2))
+					- 1./8.*(a_grad_2_multigrid(iv,3*c_U_0 + 0) + a_grad_2_multigrid(iv,3*c_U_0 + 1) + a_grad_2_multigrid(iv,3*c_U_0 + 2)
+							+ a_grad_multigrid(iv,3*c_V0_0 + 0) + a_grad_multigrid(iv,3*c_V1_0 + 1) + a_grad_multigrid(iv,3*c_V2_0 + 2)
+							+ loc[0]*a_grad_2_multigrid(iv,3*c_V0_0 + 0) + loc[0]*a_grad_2_multigrid(iv,3*c_V0_0 + 1) + loc[0]*a_grad_2_multigrid(iv,3*c_V0_0 + 2)
+						   	+ loc[1]*a_grad_2_multigrid(iv,3*c_V1_0 + 0) + loc[1]*a_grad_2_multigrid(iv,3*c_V1_0 + 1) + loc[1]*a_grad_2_multigrid(iv,3*c_V1_0 + 2)
+							+ loc[2]*a_grad_2_multigrid(iv,3*c_V2_0 + 0) + loc[2]*a_grad_2_multigrid(iv,3*c_V2_0 + 1) + loc[2]*a_grad_2_multigrid(iv,3*c_V2_0 + 2));
 
-    multigrid_vars_box(iv, c_A22_0) = 2.*a_grad_multigrid(iv,3*c_W1_0 + 1) - 2./3.*trace; 
+    multigrid_vars_box(iv, c_A11_0) = 2.* (7./8.*a_grad_multigrid(iv,3*c_V0_0 + 0)
+                   						- 1./8.*(a_grad_2_multigrid(iv,3*c_U_0 + 0) + a_grad_multigrid(iv,3*c_V0_0 + 0) + loc[0]*a_grad_2_multigrid(iv,3*c_V0_0 + 0)
+                            						+ loc[1]*a_grad_2_multigrid(iv,3*c_V1_0 + 0) + loc[2]*a_grad_2_multigrid(iv,3*c_V2_0 + 0))) - 2./3.*trace;
 
-    multigrid_vars_box(iv, c_A33_0) = 2.*a_grad_multigrid(iv,3*c_W2_0 + 2) - 2./3.*trace;
+    multigrid_vars_box(iv, c_A22_0) = 2.* (7./8.*a_grad_multigrid(iv,3*c_V1_0 + 1)
+                                        - 1./8.*(a_grad_2_multigrid(iv,3*c_U_0 + 1) + a_grad_multigrid(iv,3*c_V1_0 + 1) + loc[0]*a_grad_2_multigrid(iv,3*c_V0_0 + 1)
+                                                    + loc[1]*a_grad_2_multigrid(iv,3*c_V1_0 + 1) + loc[2]*a_grad_2_multigrid(iv,3*c_V2_0 + 1))) - 2./3.*trace; 
 
-    multigrid_vars_box(iv, c_A12_0) = a_grad_multigrid(iv,3*c_W1_0 + 0) + a_grad_multigrid(iv,3*c_W0_0 + 1);
+    multigrid_vars_box(iv, c_A33_0) = 2.* (7./8.*a_grad_multigrid(iv,3*c_V2_0 + 2)
+                                        - 1./8.*(a_grad_2_multigrid(iv,3*c_U_0 + 2) + a_grad_multigrid(iv,3*c_V2_0 + 2) + loc[0]*a_grad_2_multigrid(iv,3*c_V0_0 + 2)
+                                                    + loc[1]*a_grad_2_multigrid(iv,3*c_V1_0 + 2) + loc[2]*a_grad_2_multigrid(iv,3*c_V2_0 + 2))) - 2./3.*trace;
 
-    multigrid_vars_box(iv, c_A13_0) = a_grad_multigrid(iv,3*c_W2_0 + 0) + a_grad_multigrid(iv,3*c_W0_0 + 2);
+    multigrid_vars_box(iv, c_A12_0) = 7./8.*a_grad_multigrid(iv,3*c_V0_0 + 1)
+                                        - 1./8.*(a_grad_mixed_multigrid(iv,3*c_U_0 + 0) + a_grad_multigrid(iv,3*c_V1_0 + 0) + loc[0]*a_grad_mixed_multigrid(iv,3*c_V0_0 + 0)
+                                                    + loc[1]*a_grad_mixed_multigrid(iv,3*c_V1_0 + 0) + loc[2]*a_grad_mixed_multigrid(iv,3*c_V2_0 + 0))
+									+ 7./8.*a_grad_multigrid(iv,3*c_V1_0 + 0)
+                                        - 1./8.*(a_grad_mixed_multigrid(iv,3*c_U_0 + 0) + a_grad_multigrid(iv,3*c_V0_0 + 1) + loc[0]*a_grad_mixed_multigrid(iv,3*c_V0_0 + 0)
+                                                    + loc[1]*a_grad_mixed_multigrid(iv,3*c_V1_0 + 0) + loc[2]*a_grad_mixed_multigrid(iv,3*c_V2_0 + 0));
 
-    multigrid_vars_box(iv, c_A23_0) = a_grad_multigrid(iv,3*c_W2_0 + 1) + a_grad_multigrid(iv,3*c_W1_0 + 2);
+    multigrid_vars_box(iv, c_A13_0) = 7./8.*a_grad_multigrid(iv,3*c_V0_0 + 2)
+                                        - 1./8.*(a_grad_mixed_multigrid(iv,3*c_U_0 + 1) + a_grad_multigrid(iv,3*c_V2_0 + 0) + loc[0]*a_grad_mixed_multigrid(iv,3*c_V0_0 + 1)
+                                                    + loc[1]*a_grad_mixed_multigrid(iv,3*c_V1_0 + 1) + loc[2]*a_grad_mixed_multigrid(iv,3*c_V2_0 + 1))
+                                    + 7./8.*a_grad_multigrid(iv,3*c_V2_0 + 0)
+                                        - 1./8.*(a_grad_mixed_multigrid(iv,3*c_U_0 + 1) + a_grad_multigrid(iv,3*c_V0_0 + 2) + loc[0]*a_grad_mixed_multigrid(iv,3*c_V0_0 + 1)
+                                                    + loc[1]*a_grad_mixed_multigrid(iv,3*c_V1_0 + 1) + loc[2]*a_grad_mixed_multigrid(iv,3*c_V2_0 + 1));
+
+    multigrid_vars_box(iv, c_A23_0) = 7./8.*a_grad_multigrid(iv,3*c_V1_0 + 2)
+                                        - 1./8.*(a_grad_mixed_multigrid(iv,3*c_U_0 + 2) + a_grad_multigrid(iv,3*c_V2_0 + 1) + loc[0]*a_grad_mixed_multigrid(iv,3*c_V0_0 + 2)
+                                                    + loc[1]*a_grad_mixed_multigrid(iv,3*c_V1_0 + 2) + loc[2]*a_grad_mixed_multigrid(iv,3*c_V2_0 + 2))
+                                	+ 7./8.*a_grad_multigrid(iv,3*c_V2_0 + 1)
+                                        - 1./8.*(a_grad_mixed_multigrid(iv,3*c_U_0 + 1) + a_grad_multigrid(iv,3*c_V1_0 + 2) + loc[0]*a_grad_mixed_multigrid(iv,3*c_V0_0 + 2)
+                                                    + loc[1]*a_grad_mixed_multigrid(iv,3*c_V1_0 + 2) + loc[2]*a_grad_mixed_multigrid(iv,3*c_V2_0 + 2));
 
 }
 #endif /* SETBINARYBH_HPP */
