@@ -81,14 +81,18 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
     {
         multigrid_vars[ilev] =
             new LevelData<FArrayBox>(a_grids[ilev], NUM_MULTIGRID_VARS, ghosts);
-        dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, ghosts);
-        rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero);
-        integrand[ilev] =
-            new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero);
-        aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
-            new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero));
-        bCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
-            new LevelData<FArrayBox>(a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero));
+        dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev],
+                                              NUM_CONSTRAINTS_VARS, ghosts);
+        rhs[ilev] = new LevelData<FArrayBox>(
+            a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero);
+        integrand[ilev] = new LevelData<FArrayBox>(
+            a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero);
+        aCoef[ilev] =
+            RefCountedPtr<LevelData<FArrayBox>>(new LevelData<FArrayBox>(
+                a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero));
+        bCoef[ilev] =
+            RefCountedPtr<LevelData<FArrayBox>>(new LevelData<FArrayBox>(
+                a_grids[ilev], NUM_CONSTRAINTS_VARS, IntVect::Zero));
         vectDomains[ilev] = domLev;
         vectDx[ilev] = dxLev;
         // set initial guess for psi and zero dpsi
@@ -172,7 +176,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
             RefCountedPtr<AMRLevelOpFactory<LevelData<FArrayBox>>>(
                 defineOperatorFactory(a_grids, vectDomains, aCoef, bCoef,
                                       a_params));
-    
+
         // define the multi level operator
         mlOp.define(a_grids, a_params.refRatio, vectDomains, vectDx, opFactory,
                     lBase);
@@ -216,10 +220,10 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
                             exchange_copier);
         }
 
-
         // check if converged or diverging and if so exit NL iteration for loop
-        dpsi_norm = computeNorm(dpsi, a_params.refRatio, a_params.coarsestDx,
-                                Interval(0, 0));   //TODO JCAurre: not completely sure
+        dpsi_norm =
+            computeNorm(dpsi, a_params.refRatio, a_params.coarsestDx,
+                        Interval(0, 0)); // TODO JCAurre: not completely sure
         pout() << "The norm of dpsi after step " << NL_iter + 1 << " is "
                << dpsi_norm << endl;
         if (dpsi_norm < tolerance || dpsi_norm > 1e5)
@@ -296,14 +300,14 @@ int main(int argc, char *argv[])
         PoissonParameters params;
         Vector<DisjointBoxLayout> grids;
 
-		// read params from file
+        // read params from file
         getPoissonParameters(params);
 
-		// set up the grids, using the rhs for tagging to decide
+        // set up the grids, using the rhs for tagging to decide
         // where needs additional levels
         set_grids(grids, params);
 
-		// Solve the equations!
+        // Solve the equations!
         status = poissonSolve(grids, params);
 
     } // End scoping trick

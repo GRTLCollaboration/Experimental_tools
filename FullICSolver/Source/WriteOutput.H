@@ -69,11 +69,12 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
     int nRhsComp = a_rhs[0]->nComp();
     int nMGComp = a_multigrid_vars[0]->nComp();
     int totalComp = ndpsiComp + nRhsComp + nMGComp;
-	CH_assert(totalComp == 2*NUM_CONSTRAINTS_VARS + NUM_MULTIGRID_VARS);
+    CH_assert(totalComp == 2 * NUM_CONSTRAINTS_VARS + NUM_MULTIGRID_VARS);
 
     // set names
     Vector<string> variable_names(totalComp);
-    variable_names[0] = "dpsi0";        //JCAurre: name for the rhs and linear solution of constraints
+    variable_names[0] =
+        "dpsi0"; // JCAurre: name for the rhs and linear solution of constraints
     variable_names[1] = "dpsi1";
     variable_names[2] = "dpsi2";
     variable_names[3] = "dpsi3";
@@ -83,9 +84,9 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
     variable_names[7] = "rhs2";
     variable_names[8] = "rhs3";
     variable_names[9] = "rhs4";
-	for (int icomp = 0; icomp < NUM_MULTIGRID_VARS; icomp++)
+    for (int icomp = 0; icomp < NUM_MULTIGRID_VARS; icomp++)
     {
-        variable_names[2*NUM_CONSTRAINTS_VARS + icomp] =
+        variable_names[2 * NUM_CONSTRAINTS_VARS + icomp] =
             MultigridUserVariables::variable_names[icomp];
     }
     // check the domain sizes are the same
@@ -96,9 +97,10 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
     for (int level = 0; level < a_dpsi.size(); level++)
     {
         tempData[level] = new LevelData<FArrayBox>(a_grids[level], totalComp);
-        Interval dpsiComps(0, NUM_CONSTRAINTS_VARS-1);
-        Interval rhsComps(NUM_CONSTRAINTS_VARS, 2*NUM_CONSTRAINTS_VARS-1);
-        Interval mgComps(2*NUM_CONSTRAINTS_VARS,2*NUM_CONSTRAINTS_VARS + NUM_MULTIGRID_VARS - 1);
+        Interval dpsiComps(0, NUM_CONSTRAINTS_VARS - 1);
+        Interval rhsComps(NUM_CONSTRAINTS_VARS, 2 * NUM_CONSTRAINTS_VARS - 1);
+        Interval mgComps(2 * NUM_CONSTRAINTS_VARS,
+                         2 * NUM_CONSTRAINTS_VARS + NUM_MULTIGRID_VARS - 1);
         a_dpsi[level]->copyTo(a_dpsi[level]->interval(), *tempData[level],
                               dpsiComps);
         a_rhs[level]->copyTo(a_rhs[level]->interval(), *tempData[level],
@@ -112,7 +114,7 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
                           a_params.coarsestDomain.domainBox(),
                           a_params.coarsestDx, fakeDt, fakeTime,
                           a_params.refRatio, a_params.numLevels);
-	// clean up temporary storage
+    // clean up temporary storage
     for (int level = 0; level < a_dpsi.size(); level++)
     {
         delete tempData[level];
