@@ -220,12 +220,12 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
                 laplace_multigrid(iv, c_psi);
 
             // JCAurre: Added rhs for new constraint variables.
-            rhs_box(iv, c_U) =
-                8.0 * M_PI * pow(psi_0, 10.0) * pi_0 *
-                    (loc[0] * grad_multigrid(iv, 3 * c_phi_0 + 0) +
-                     loc[1] * grad_multigrid(iv, 3 * c_phi_0 + 1) +
-                     loc[2] * grad_multigrid(iv, 3 * c_phi_0 + 2)) -
-                laplace_multigrid(iv, c_U);
+            rhs_box(iv, c_U) = 0;
+//                8.0 * M_PI * pow(psi_0, 10.0) * pi_0 *
+//                    (loc[0] * grad_multigrid(iv, 3 * c_phi_0 + 0) +
+//                     loc[1] * grad_multigrid(iv, 3 * c_phi_0 + 1) +
+//                     loc[2] * grad_multigrid(iv, 3 * c_phi_0 + 2)) -
+//                laplace_multigrid(iv, c_U);
             rhs_box(iv, c_V0) = -8.0 * M_PI * pow(psi_0, 10.0) * pi_0 *
                                     grad_multigrid(iv, 3 * c_phi_0 + 0) -
                                 laplace_multigrid(iv, c_V0);
