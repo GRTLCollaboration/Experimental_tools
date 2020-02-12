@@ -14,7 +14,7 @@ beta  = -1.0
 
 # AMR grid params - grid length and number of cells by direction
 L = 32
-N = 128 128 128
+N = 64 64 64
 # number of AMR refinement levels is max_level + 1
 max_level    = 0
 # Threshold for AMR refinement, based on magnitude of rhs

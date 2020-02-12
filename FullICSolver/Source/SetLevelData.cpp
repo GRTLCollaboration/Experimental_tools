@@ -105,8 +105,7 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
             loc *= a_dx;
             loc -= a_params.domainLength / 2.0;
 
-            // set phi and pi according to user defined function. JCAurre TODO:
-            // different input params
+            // set phi and pi according to user defined function
             multigrid_vars_box(iv, c_phi_0) =
                 my_phi_function(loc, a_params.phi_amplitude,
                                 a_params.phi_wavelength, a_params.domainLength);
@@ -135,11 +134,10 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
         rhs_box.setVal(0.0, 0);
         Box this_box = rhs_box.box(); // no ghost cells
 
-        // calculate the laplacian of psi across the box
-        FArrayBox laplacian_of_psi(this_box, 1);
-        FORT_GETLAPLACIANPSIF(CHF_FRA1(laplacian_of_psi, 0),
-                              CHF_CONST_FRA1(multigrid_vars_box, c_psi),
-                              CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+        // calculate the laplacian of Psi across the box
+        FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
+        get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
+                      laplace_multigrid, a_params);
 
         // calculate the rho contribution from gradients of phi
         FArrayBox rho_gradient(this_box, 1);
@@ -147,10 +145,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
                             CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
-        FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
-        get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
-                      laplace_multigrid, a_params);
-
+		// calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
@@ -226,11 +221,10 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
         integrand_box.setVal(0.0, 0);
         Box this_box = integrand_box.box(); // no ghost cells
 
-        // calculate the laplacian of psi across the box
-        FArrayBox laplacian_of_psi(this_box, 1);
-        FORT_GETLAPLACIANPSIF(CHF_FRA1(laplacian_of_psi, 0),
-                              CHF_CONST_FRA1(multigrid_vars_box, c_psi),
-                              CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+        // calculate the laplacian of Psi across the box                                                                                              
+        FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
+        get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
+                      laplace_multigrid, a_params);
 
         // calculate the rho contribution from gradients of phi
         FArrayBox rho_gradient(this_box, 1);
@@ -238,9 +232,11 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
                             CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
+        // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box, multigrid_vars_box, Interval(c_V0_0, c_V2_0), a_dx,
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
+
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
@@ -279,7 +275,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
                 1.5 * A2 * pow(psi_0, -12.0) +
                 24.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) *
                     pow(psi_0, -4.0) +
-                12.0 * laplacian_of_psi(iv, 0) * pow(psi_0, -5.0);
+                12.0 * laplace_multigrid(iv, c_psi) * pow(psi_0, -5.0);
 
             integrand_box(iv, c_V0) = 0;
             integrand_box(iv, c_V1) = 0;
@@ -305,14 +301,16 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
         condition_box.setVal(0.0, 0);
         Box this_box = condition_box.box(); // no ghost cells
 
+
         // calculate the rho contribution from gradients of phi
         FArrayBox rho_gradient(this_box, 1);
         FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
                             CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
+        // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box, multigrid_vars_box, Interval(c_V0_0, c_V2_0), a_dx,
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
 
         BoxIterator bit(this_box);
@@ -432,8 +430,9 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
                             CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
+        // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box, multigrid_vars_box, Interval(c_V0_0, c_V2_0), a_dx,
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
 
 
@@ -542,11 +541,13 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
         BoxIterator bit(this_box);
         Box this_box_ng = grids[dit()];
 
+		// calculate gradients for constructing Aij
         FArrayBox grad_multigrid(this_box_ng, 3 * NUM_MULTIGRID_VARS);
         get_grad(this_box_ng, multigrid_vars_box, Interval(c_V0_0, c_V2_0), a_dx,
                  grad_multigrid, a_params);
 
 
+		// Aij is defined to be zero in the ghost cells, so be careful with fixed BCs
         BoxIterator bit_no_ghosts(this_box_ng);
         for (bit_no_ghosts.begin(); bit_no_ghosts.ok(); ++bit_no_ghosts)
         {
