@@ -103,6 +103,7 @@ class VariableCoeffPoissonOperatorFactory
     Vector<RefCountedPtr<LevelData<FArrayBox>>> m_aCoef;
     Vector<RefCountedPtr<LevelData<FArrayBox>>> m_bCoef;
 
+	int m_nComp;
     Vector<RefCountedPtr<LevelData<FArrayBox>>> m_lambda;
 
     Vector<Copier> m_exchangeCopiers;

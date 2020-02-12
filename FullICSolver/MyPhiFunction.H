@@ -9,8 +9,8 @@
 Real my_phi_function(RealVect loc, Real amplitude, Real wavelength, RealVect L)
 {
     // gaussian - use with Dirichlet BCs
-    //    Real r2 = D_TERM(loc[0] * loc[0], +loc[1] * loc[1], +loc[2] * loc[2]);
-    //    return amplitude * exp(-r2 / wavelength);
+//        Real r2 = D_TERM(loc[0] * loc[0], +loc[1] * loc[1], +loc[2] * loc[2]);
+//        return amplitude * exp(-r2 / wavelength);
 
     // sine waves in 3 directions - use with periodic BCs
     return amplitude * (sin(2 * M_PI * loc[0] * wavelength / L[0]) +
@@ -21,8 +21,8 @@ Real my_phi_function(RealVect loc, Real amplitude, Real wavelength, RealVect L)
 Real my_pi_function(RealVect loc, Real amplitude, Real wavelength, RealVect L)
 {
     // gaussian - use with Dirichlet BCs
-    //    Real r2 = D_TERM(loc[0] * loc[0], +loc[1] * loc[1], +loc[2] * loc[2]);
-    //    return amplitude * exp(-r2 / wavelength);
+//        Real r2 = D_TERM(loc[0] * loc[0], +loc[1] * loc[1], +loc[2] * loc[2]);
+//        return amplitude * exp(-r2 / wavelength);
 
     // sine waves in 3 directions - use with periodic BCs
     return amplitude * (sin(2 * M_PI * loc[0] * wavelength / L[0]) +

@@ -77,13 +77,6 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
         get_grad(b_no_ghosts, multigrid_vars_box, Interval(c_U_0, c_V2_0), a_dx,
                  grad_multigrid, a_params);
 
-        FArrayBox grad2_multigrid(b_no_ghosts, 3 * NUM_MULTIGRID_VARS);
-        get_grad_2(b_no_ghosts, multigrid_vars_box, Interval(c_U_0, c_V2_0),
-                   a_dx, grad2_multigrid, a_params);
-
-        FArrayBox gradmixed_multigrid(b_no_ghosts, 3 * NUM_MULTIGRID_VARS);
-        get_grad_mixed(b_no_ghosts, multigrid_vars_box, Interval(c_U_0, c_V2_0),
-                       a_dx, gradmixed_multigrid, a_params);
 
         BoxIterator bit_no_ghosts(b_no_ghosts);
         for (bit_no_ghosts.begin(); bit_no_ghosts.ok(); ++bit_no_ghosts)
@@ -226,13 +219,13 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
 //                     loc[1] * grad_multigrid(iv, 3 * c_phi_0 + 1) +
 //                     loc[2] * grad_multigrid(iv, 3 * c_phi_0 + 2)) -
 //                laplace_multigrid(iv, c_U);
-            rhs_box(iv, c_V0) = -8.0 * M_PI * pow(psi_0, 10.0) * pi_0 *
+            rhs_box(iv, c_V0) = - 8.0 * M_PI * pow(psi_0, 6.0) * pi_0 *
                                     grad_multigrid(iv, 3 * c_phi_0 + 0) -
                                 laplace_multigrid(iv, c_V0);
-            rhs_box(iv, c_V1) = -8.0 * M_PI * pow(psi_0, 10.0) * pi_0 *
+            rhs_box(iv, c_V1) = - 8.0 * M_PI * pow(psi_0, 6.0) * pi_0 *
                                     grad_multigrid(iv, 3 * c_phi_0 + 1) -
                                 laplace_multigrid(iv, c_V1);
-            rhs_box(iv, c_V2) = -8.0 * M_PI * pow(psi_0, 10.0) * pi_0 *
+            rhs_box(iv, c_V2) = - 8.0 * M_PI * pow(psi_0, 6.0) * pi_0 *
                                     grad_multigrid(iv, 3 * c_phi_0 + 2) -
                                 laplace_multigrid(iv, c_V2);
         }

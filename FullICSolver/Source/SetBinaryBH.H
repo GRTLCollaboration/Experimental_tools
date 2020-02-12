@@ -113,8 +113,7 @@ void set_Aij_0(FArrayBox &multigrid_vars_box, const IntVect &iv,
                const FArrayBox &a_grad_mixed_multigrid)
 {
 
-    Real trace = 3. / 4. *
-                     (a_grad_multigrid(iv, 3 * c_V0_0 + 0) +
+    Real trace =     (a_grad_multigrid(iv, 3 * c_V0_0 + 0) +
                       a_grad_multigrid(iv, 3 * c_V1_0 + 1) +
                       a_grad_multigrid(iv, 3 * c_V2_0 + 2));
 /*                 1. / 8. *
@@ -136,7 +135,7 @@ void set_Aij_0(FArrayBox &multigrid_vars_box, const IntVect &iv,
 */
     multigrid_vars_box(iv, c_A11_0) = 3. / 4. * 
 			(a_grad_multigrid(iv, 3 * c_V0_0 + 0)
-			 + a_grad_multigrid(iv, 3 * c_V0_0 + 0)) - 2. / 3. * trace;
+			 + a_grad_multigrid(iv, 3 * c_V0_0 + 0)) - 1. / 2. * trace;
 /*        2. * (7. / 8. * a_grad_multigrid(iv, 3 * c_V0_0 + 0) -
               1. / 8. *
                   (a_grad_2_multigrid(iv, 3 * c_U_0 + 0) +
@@ -148,7 +147,7 @@ void set_Aij_0(FArrayBox &multigrid_vars_box, const IntVect &iv,
 */
     multigrid_vars_box(iv, c_A22_0) = 3. / 4. * 
             (a_grad_multigrid(iv, 3 * c_V1_0 + 1)
-             + a_grad_multigrid(iv, 3 * c_V1_0 + 1)) - 2. / 3. * trace;
+             + a_grad_multigrid(iv, 3 * c_V1_0 + 1)) - 1. / 2. * trace;
 /*        2. * (7. / 8. * a_grad_multigrid(iv, 3 * c_V1_0 + 1) -
               1. / 8. *
                   (a_grad_2_multigrid(iv, 3 * c_U_0 + 1) +
@@ -160,7 +159,7 @@ void set_Aij_0(FArrayBox &multigrid_vars_box, const IntVect &iv,
 */
     multigrid_vars_box(iv, c_A33_0) = 3. / 4. * 
             (a_grad_multigrid(iv, 3 * c_V2_0 + 2)
-             + a_grad_multigrid(iv, 3 * c_V2_0 + 2)) - 2. / 3. * trace;
+             + a_grad_multigrid(iv, 3 * c_V2_0 + 2)) - 1. / 2. * trace;
 /*        2. * (7. / 8. * a_grad_multigrid(iv, 3 * c_V2_0 + 2) -
               1. / 8. *
                   (a_grad_2_multigrid(iv, 3 * c_U_0 + 2) +
