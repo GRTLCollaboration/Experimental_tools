@@ -78,12 +78,11 @@ void output_solver_data(const Vector<LevelData<FArrayBox> *> &a_dpsi,
     variable_names[1] = "dpsi1";
     variable_names[2] = "dpsi2";
     variable_names[3] = "dpsi3";
-    variable_names[4] = "dpsi4";
-    variable_names[5] = "rhs0";
-    variable_names[6] = "rhs1";
-    variable_names[7] = "rhs2";
-    variable_names[8] = "rhs3";
-    variable_names[9] = "rhs4";
+    variable_names[4] = "rhs0";
+    variable_names[5] = "rhs1";
+    variable_names[6] = "rhs2";
+    variable_names[7] = "rhs3";
+    variable_names[8] = "rhs4";
     for (int icomp = 0; icomp < NUM_MULTIGRID_VARS; icomp++)
     {
         variable_names[2 * NUM_CONSTRAINTS_VARS + icomp] =
