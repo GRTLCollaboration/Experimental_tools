@@ -296,7 +296,7 @@ VariableCoeffPoissonOperatorFactory::AMRnewOp(const ProblemDomain &a_indexSpace)
             int refToFiner = m_refRatios[0]; // actual refinement ratio
             newOp->define(m_boxes[0], m_boxes[1], m_dx[0], dummyRat, refToFiner,
                           a_indexSpace, m_bc, m_exchangeCopiers[0],
-                          m_cfregion[0],5);
+                          m_cfregion[0],m_nComp);
         }
     }
     else if (ref == m_domains.size() - 1)
@@ -306,7 +306,7 @@ VariableCoeffPoissonOperatorFactory::AMRnewOp(const ProblemDomain &a_indexSpace)
         // finest AMR level
         newOp->define(m_boxes[ref], m_boxes[ref - 1], m_dx[ref],
                       m_refRatios[ref - 1], a_indexSpace, m_bc,
-                      m_exchangeCopiers[ref], m_cfregion[ref],5);
+                      m_exchangeCopiers[ref], m_cfregion[ref],m_nComp);
     }
     else if (ref == m_domains.size())
     {
@@ -321,7 +321,7 @@ VariableCoeffPoissonOperatorFactory::AMRnewOp(const ProblemDomain &a_indexSpace)
         newOp->define(m_boxes[ref], m_boxes[ref + 1], m_boxes[ref - 1],
                       m_dx[ref], m_refRatios[ref - 1], m_refRatios[ref],
                       a_indexSpace, m_bc, m_exchangeCopiers[ref],
-                      m_cfregion[ref],5);
+                      m_cfregion[ref],m_nComp);
     }
 
     newOp->m_alpha = m_alpha;
