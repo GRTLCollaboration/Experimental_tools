@@ -61,7 +61,7 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
             // for the BHs - this is added at the output data stage
             // and when we calculate psi_0 in the rhs etc
             // as it already satisfies Laplacian(psi) = 0
-            multigrid_vars_box(iv, c_psi) = 1.0;
+            multigrid_vars_box(iv, c_psi_reg) = 1.0;
             dpsi_box(iv, 0) = 0.0;
 
             // set the phi value - need the distance from centre
@@ -139,7 +139,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
         Box this_box = rhs_box.box(); // no ghost cells
 
         FArrayBox phi_fab(Interval(c_phi_0, c_phi_0), multigrid_vars_box);
-        FArrayBox psi_fab(Interval(c_psi, c_psi), multigrid_vars_box);
+        FArrayBox psi_fab(Interval(c_psi_reg, c_psi_reg), multigrid_vars_box);
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
@@ -163,8 +163,8 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
                  2 * pow(multigrid_vars_box(iv, c_A13_0), 2.0) +
                  2 * pow(multigrid_vars_box(iv, c_A23_0), 2.0);
 
-            Real psi_bh = get_binary_bh_psi(loc, a_params);
-            Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
+            Real psi_bl = get_psi_brill_lindquist(loc, a_params);
+            Real psi_0 = multigrid_vars_box(iv, c_psi_reg) + psi_bl;
 
             rhs_box(iv, 0) = 0.125 * m * pow(psi_0, 5.0) -
                              0.125 * A2 * pow(psi_0, -7.0) -
@@ -193,7 +193,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
         Box this_box = integrand_box.box(); // no ghost cells
 
         FArrayBox phi_fab(Interval(c_phi_0, c_phi_0), multigrid_vars_box);
-        FArrayBox psi_fab(Interval(c_psi, c_psi), multigrid_vars_box);
+        FArrayBox psi_fab(Interval(c_psi_reg, c_psi_reg), multigrid_vars_box);
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
@@ -217,8 +217,8 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
                  2 * pow(multigrid_vars_box(iv, c_A13_0), 2.0) +
                  2 * pow(multigrid_vars_box(iv, c_A23_0), 2.0);
 
-            Real psi_bh = get_binary_bh_psi(loc, a_params);
-            Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
+            Real psi_bl = get_psi_brill_lindquist(loc, a_params);
+            Real psi_0 = multigrid_vars_box(iv, c_psi_reg) + psi_bl;
 
             integrand_box(iv, 0) = -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
                                    12.0 * M_PI * a_params.G_Newton *
@@ -269,8 +269,8 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
 
             // the condition is similar to the rhs but we take abs
             // value of the contributions and add in BH criteria
-            Real psi_bh = get_binary_bh_psi(loc, a_params);
-            Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
+            Real psi_bl = get_psi_brill_lindquist(loc, a_params);
+            Real psi_0 = multigrid_vars_box(iv, c_psi_reg) + psi_bl;
             condition_box(iv, 0) = 1.5 * abs(m) + 1.5 * A2 * pow(psi_0, -7.0) +
                                    12.0 * M_PI * a_params.G_Newton *
                                        abs(grad_phi_sq) * pow(psi_0, 1.0) +
@@ -300,7 +300,7 @@ void set_update_psi0(LevelData<FArrayBox> &a_multigrid_vars,
         for (bit.begin(); bit.ok(); ++bit)
         {
             IntVect iv = bit();
-            multigrid_vars_box(iv, c_psi) += dpsi_box(iv, 0);
+            multigrid_vars_box(iv, c_psi_reg) += dpsi_box(iv, 0);
         }
     }
 }
@@ -359,8 +359,8 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
                  2 * pow(multigrid_vars_box(iv, c_A13_0), 2.0) +
                  2 * pow(multigrid_vars_box(iv, c_A23_0), 2.0);
 
-            Real psi_bh = get_binary_bh_psi(loc, a_params);
-            Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
+            Real psi_bl = get_psi_brill_lindquist(loc, a_params);
+            Real psi_0 = multigrid_vars_box(iv, c_psi_reg) + psi_bl;
             aCoef_box(iv, 0) = -0.625 * m * pow(psi_0, 4.0) -
                                0.875 * A2 * pow(psi_0, -8.0) +
                                M_PI * a_params.G_Newton * grad_phi_sq;
@@ -427,8 +427,8 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
             get_loc(loc, iv, a_dx, a_params);
 
             // GRChombo conformal factor chi = psi^-4
-            Real psi_bh = get_binary_bh_psi(loc, a_params);
-            Real chi = pow(multigrid_vars_box(iv, c_psi) + psi_bh, -4.0);
+            Real psi_bl = get_psi_brill_lindquist(loc, a_params);
+            Real chi = pow(multigrid_vars_box(iv, c_psi_reg) + psi_bl, -4.0);
             grchombo_vars_box(iv, c_chi) = chi;
             Real factor = pow(chi, 1.5);
 
