@@ -65,9 +65,9 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
             dpsi_box(iv, c_V1) = 0.0;
             dpsi_box(iv, c_V2) = 0.0;
 
-            multigrid_vars_box(iv, c_V0_0) = 1.0;
-            multigrid_vars_box(iv, c_V1_0) = 1.0;
-            multigrid_vars_box(iv, c_V2_0) = 1.0;
+            multigrid_vars_box(iv, c_V0_0) = 0.0;
+            multigrid_vars_box(iv, c_V1_0) = 0.0;
+            multigrid_vars_box(iv, c_V2_0) = 0.0;
         }
 
         // JCAurre: out of the box loop so that there are no race condition
