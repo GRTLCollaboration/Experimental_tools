@@ -13,6 +13,7 @@
 #include "CoarseAverage.H"
 #include "LoadBalance.H"
 #include "MyPhiFunction.H"
+#include "MyPotentialFunction.H"
 #include "PoissonParameters.H"
 #include "SetBinaryBH.H"
 #include "SetLevelDataCpp.H"
@@ -401,7 +402,7 @@ void set_m_value(Real &m, const Real &phi_here,
     // KC TODO:
     // For now rho is just the gradient term which is kept separate
     // ... may want to add V(phi) and phidot/Pi here later though
-    Real V_of_phi = 0.0;
+    Real V_of_phi = my_potential_function(phi_here);
     Real rho = V_of_phi;
 
     m = (2.0 / 3.0) * (constant_K * constant_K) -
