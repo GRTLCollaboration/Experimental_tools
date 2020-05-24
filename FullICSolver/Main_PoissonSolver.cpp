@@ -24,6 +24,7 @@
 #include "computeSum.H"
 #include <iostream>
 
+#include "ReadHDF5.H"
 #ifdef CH_Linux
 // Should be undefined by default
 //#define TRAP_FPE
@@ -100,10 +101,12 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
         set_initial_conditions(*multigrid_vars[ilev], *dpsi[ilev], vectDx[ilev],
                                a_params);
 
+ //       readHDF5(*multigrid_vars[ilev], a_params, ilev);
         // prepare temp dx, domain vars for next level
         dxLev /= a_params.refRatio[ilev];
         domLev.refine(a_params.refRatio[ilev]);
     }
+
 
     // set up linear operator
     int lBase = 0;

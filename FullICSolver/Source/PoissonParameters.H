@@ -59,6 +59,7 @@ class PoissonParameters
     Real bh2_momentum;
     Real bh1_offset;
     Real bh2_offset;
+    std::string read_from_file;
 };
 
 /// get stuff from input file

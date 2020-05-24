@@ -23,6 +23,8 @@
 #include "parstream.H"
 #include <cmath>
 
+//#include "ReadHDF5.H"
+
 // Set various LevelData functions across the grid
 
 // set initial guess value for the conformal factor psi
@@ -37,6 +39,7 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
 
     CH_assert(a_multigrid_vars.nComp() == NUM_MULTIGRID_VARS);
 
+ //   readHDF5(a_multigrid_vars, a_params);
     DataIterator dit = a_multigrid_vars.dataIterator();
     const DisjointBoxLayout &grids = a_multigrid_vars.disjointBoxLayout();
     for (dit.begin(); dit.ok(); ++dit)
