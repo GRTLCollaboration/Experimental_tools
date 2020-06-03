@@ -39,7 +39,7 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
 
     CH_assert(a_multigrid_vars.nComp() == NUM_MULTIGRID_VARS);
 
- //   readHDF5(a_multigrid_vars, a_params);
+    //   readHDF5(a_multigrid_vars, a_params);
     DataIterator dit = a_multigrid_vars.dataIterator();
     const DisjointBoxLayout &grids = a_multigrid_vars.disjointBoxLayout();
     for (dit.begin(); dit.ok(); ++dit)
@@ -76,9 +76,8 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
         // JCAurre: out of the box loop so that there are no race condition
         // problems
         FArrayBox grad_multigrid(b_no_ghosts, 3 * NUM_MULTIGRID_VARS);
-        get_grad(b_no_ghosts, multigrid_vars_box, Interval(c_V0_0, c_V2_0), a_dx,
-                 grad_multigrid, a_params);
-
+        get_grad(b_no_ghosts, multigrid_vars_box, Interval(c_V0_0, c_V2_0),
+                 a_dx, grad_multigrid, a_params);
 
         BoxIterator bit_no_ghosts(b_no_ghosts);
         for (bit_no_ghosts.begin(); bit_no_ghosts.ok(); ++bit_no_ghosts)
@@ -118,6 +117,12 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
                 my_pi_function(loc, a_params.pi_amplitude,
                                a_params.pi_wavelength, a_params.domainLength);
 
+			multigrid_vars_box(iv, c_h11_0) = 1.0;
+			multigrid_vars_box(iv, c_h12_0) = 0.0;
+			multigrid_vars_box(iv, c_h13_0) = 0.0;
+			multigrid_vars_box(iv, c_h22_0) = 1.0;
+			multigrid_vars_box(iv, c_h23_0) = 0.0;
+			multigrid_vars_box(iv, c_h33_0) = 1.0;
         }
     }
 } // end set_initial_conditions
@@ -149,10 +154,19 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
                             CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
-		// calculate gradients for constructing rho and Aij
+        // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
+
+        // FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        // get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
+        //           a_dx, grad_multigrid, a_params);
+
+        // FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        // get_mixed_grad2(this_box, multigrid_vars_box,
+        //                 Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
+        //                 a_params);
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
@@ -171,8 +185,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             Real pi_0 = multigrid_vars_box(iv, c_pi_0);
             set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params,
                       grad_multigrid);
-            set_binary_bh_Aij(multigrid_vars_box, iv, loc,
-                        a_params);
+            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -194,13 +207,13 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
                 laplace_multigrid(iv, c_psi);
 
             // JCAurre: Added rhs for new constraint variables.
-            rhs_box(iv, c_V0) = - 8.0 * M_PI * pow(psi_0, 6.0) * pi_0 *
+            rhs_box(iv, c_V0) = -8.0 * M_PI * pow(psi_0, 6.0) * pi_0 *
                                     grad_multigrid(iv, 3 * c_phi_0 + 0) -
                                 laplace_multigrid(iv, c_V0);
-            rhs_box(iv, c_V1) = - 8.0 * M_PI * pow(psi_0, 6.0) * pi_0 *
+            rhs_box(iv, c_V1) = -8.0 * M_PI * pow(psi_0, 6.0) * pi_0 *
                                     grad_multigrid(iv, 3 * c_phi_0 + 1) -
                                 laplace_multigrid(iv, c_V1);
-            rhs_box(iv, c_V2) = - 8.0 * M_PI * pow(psi_0, 6.0) * pi_0 *
+            rhs_box(iv, c_V2) = -8.0 * M_PI * pow(psi_0, 6.0) * pi_0 *
                                     grad_multigrid(iv, 3 * c_phi_0 + 2) -
                                 laplace_multigrid(iv, c_V2);
         }
@@ -225,7 +238,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
         integrand_box.setVal(0.0, 0);
         Box this_box = integrand_box.box(); // no ghost cells
 
-        // calculate the laplacian of Psi across the box                                                                                              
+        // calculate the laplacian of Psi across the box
         FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
         get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
                       laplace_multigrid, a_params);
@@ -240,7 +253,6 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
-
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
@@ -259,12 +271,11 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             Real pi_0 = multigrid_vars_box(iv, c_pi_0);
             set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params,
                       grad_multigrid);
-            set_binary_bh_Aij(multigrid_vars_box, iv, loc,
-                        a_params);
+            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
-                      grad_multigrid);
+ //           get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
+ //                     grad_multigrid);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -309,7 +320,6 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
         condition_box.setVal(0.0, 0);
         Box this_box = condition_box.box(); // no ghost cells
 
-
         // calculate the rho contribution from gradients of phi
         FArrayBox rho_gradient(this_box, 1);
         FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
@@ -317,7 +327,8 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
                             CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
 
         // calculate gradients for constructing rho and Aij
-        FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        FArrayBox grad_multigrid(
+            this_box, 3 * NUM_MULTIGRID_VARS); // doesnt need to be that large
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
@@ -443,7 +454,6 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
 
-
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
         {
@@ -460,8 +470,7 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             Real pi_0 = multigrid_vars_box(iv, c_pi_0);
             set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params,
                       grad_multigrid);
-            set_binary_bh_Aij(multigrid_vars_box, iv, loc,
-                        a_params);
+            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -549,13 +558,13 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
         BoxIterator bit(this_box);
         Box this_box_ng = grids[dit()];
 
-		// calculate gradients for constructing Aij
+        // calculate gradients for constructing Aij
         FArrayBox grad_multigrid(this_box_ng, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box_ng, multigrid_vars_box, Interval(c_V0_0, c_V2_0), a_dx,
-                 grad_multigrid, a_params);
+        get_grad(this_box_ng, multigrid_vars_box, Interval(c_V0_0, c_V2_0),
+                 a_dx, grad_multigrid, a_params);
 
-
-		// Aij is defined to be zero in the ghost cells, so be careful with fixed BCs
+        // Aij is defined to be zero in the ghost cells, so be careful with
+        // fixed BCs
         BoxIterator bit_no_ghosts(this_box_ng);
         for (bit_no_ghosts.begin(); bit_no_ghosts.ok(); ++bit_no_ghosts)
         {
@@ -605,3 +614,4 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
         }
     }
 }
+                  

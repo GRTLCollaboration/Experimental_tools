@@ -126,7 +126,7 @@ inline RealVect get_mixed_grad2(const Box &a_b,
                          multigrid_vars_box(iv_offset4, icomp)) /
                         (4 * a_dx[idir1] * a_dx[idir2]);
 
-                    a_mixed_grad2_of_variable(a_iv, 3 * icomp + idir1 +idir2) =
+                    a_mixed_grad2_of_variable(a_iv, 3 * icomp + idir1 + idir2) =
                         mixed_grad2[idir1 + idir2];
                 }
             }
