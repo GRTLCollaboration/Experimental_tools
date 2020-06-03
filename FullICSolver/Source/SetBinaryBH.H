@@ -154,12 +154,12 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
 
     Real ricci_tensor[3][3] = {0};
     Real h[3][3];
-    h[0][0] = multigrid_vars_box(iv, c_h11);
-    h[1][1] = multigrid_vars_box(iv, c_h22);
-    h[2][2] = multigrid_vars_box(iv, c_h33);
-    h[0][1] = multigrid_vars_box(iv, c_h12);
-    h[0][2] = multigrid_vars_box(iv, c_h13);
-    h[1][2] = multigrid_vars_box(iv, c_h23);
+    h[0][0] = multigrid_vars_box(iv, c_h11_0);
+    h[1][1] = multigrid_vars_box(iv, c_h22_0);
+    h[2][2] = multigrid_vars_box(iv, c_h33_0);
+    h[0][1] = multigrid_vars_box(iv, c_h12_0);
+    h[0][2] = multigrid_vars_box(iv, c_h13_0);
+    h[1][2] = multigrid_vars_box(iv, c_h23_0);
     h[0][1] = h[1][0];
     h[0][2] = h[2][0];
     h[1][2] = h[2][1];
