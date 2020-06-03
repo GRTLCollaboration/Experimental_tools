@@ -83,7 +83,7 @@ inline RealVect get_grad_2(const Box &a_b, const FArrayBox &multigrid_vars_box,
 
 
 // computes the laplacian of the variable you want in a box, i.e. d_i d^i phi
-inline RealVect get_laplacian(const Box &a_b,
+inline RealVect get_laplacian(const Box &a_b, //Should this be RealVect or Real
                               const FArrayBox &multigrid_vars_box,
                               const Interval &a_ncomp, const RealVect &a_dx,
                               FArrayBox &a_lapl_of_variable,
@@ -120,3 +120,4 @@ inline RealVect get_laplacian(const Box &a_b,
         }
     }
 } // end get_grad
+

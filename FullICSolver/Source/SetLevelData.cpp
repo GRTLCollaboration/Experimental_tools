@@ -262,6 +262,10 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc,
                         a_params);
 
+            // Ricci term
+            get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
+                      grad_multigrid);
+                      
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
             A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +

@@ -139,4 +139,42 @@ void set_Aij_0(FArrayBox &multigrid_vars_box, const IntVect &iv,
             (a_grad_multigrid(iv, 3 * c_V2_0 + 1)
              + a_grad_multigrid(iv, 3 * c_V1_0 + 2));
 }
+
+Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
+               const RealVect &loc, const RealVect &a_dx,
+               const PoissonParameters &a_params,
+               const FArrayBox &a_grad_multigrid)
+{
+
+    Real out_ricci = 0;
+    Real trace =     (a_grad_multigrid(iv, 3 * c_V0_0 + 0) +
+                      a_grad_multigrid(iv, 3 * c_V1_0 + 1) +
+                      a_grad_multigrid(iv, 3 * c_V2_0 + 2));
+
+	multigrid_vars_box(iv, c_A11_0) = 3. / 4. * 
+			(a_grad_multigrid(iv, 3 * c_V0_0 + 0)
+			 + a_grad_multigrid(iv, 3 * c_V0_0 + 0)) - 1. / 2. * trace;
+
+	multigrid_vars_box(iv, c_A22_0) = 3. / 4. * 
+            (a_grad_multigrid(iv, 3 * c_V1_0 + 1)
+             + a_grad_multigrid(iv, 3 * c_V1_0 + 1)) - 1. / 2. * trace;
+
+	multigrid_vars_box(iv, c_A33_0) = 3. / 4. * 
+            (a_grad_multigrid(iv, 3 * c_V2_0 + 2)
+             + a_grad_multigrid(iv, 3 * c_V2_0 + 2)) - 1. / 2. * trace;
+
+	multigrid_vars_box(iv, c_A12_0) = 3. / 4. * 
+            (a_grad_multigrid(iv, 3 * c_V0_0 + 1)
+             + a_grad_multigrid(iv, 3 * c_V1_0 + 0));
+
+	multigrid_vars_box(iv, c_A13_0) = 3. / 4. * 
+            (a_grad_multigrid(iv, 3 * c_V0_0 + 2)
+             + a_grad_multigrid(iv, 3 * c_V2_0 + 0));
+
+	multigrid_vars_box(iv, c_A23_0) = 3. / 4. * 
+            (a_grad_multigrid(iv, 3 * c_V2_0 + 1)
+             + a_grad_multigrid(iv, 3 * c_V1_0 + 2));
+
+    return out_ricci = 0;
+}
 #endif /* SETBINARYBH_HPP */
