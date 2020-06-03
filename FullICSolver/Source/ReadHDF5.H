@@ -1,3 +1,4 @@
+
 /* GRChombo
  * Copyright 2012 The GRChombo collaboration.
  * Please refer to LICENSE in GRChombo's root directory.
@@ -31,29 +32,38 @@
 #include "PoissonParameters.H"
 #include "SetLevelData.H"
 
+void defineExchangeCopier(const DisjointBoxLayout &a_level_grids,
+                          DisjointBoxLayout grown_grids, Copier exchange_copier)
+{
+    IntVect iv_ghosts = 3 * IntVect::Unit;
+    exchange_copier.exchangeDefine(grown_grids, iv_ghosts);
+}
+
 void read_level_data(LevelData<FArrayBox> &lev_dat_1,
                      LevelData<FArrayBox> &lev_dat_2)
 {
     CH_assert(lev_dat_1.disjointBoxLayout() == lev_dat_2.disjointBoxLayout());
 
-    bool disagree = 0;
-    int abort_counter = 0;
-
-    DataIterator dit = lev_dat_1.disjointBoxLayout().dataIterator();
+    DataIterator dit = lev_dat_1.dataIterator();
     for (dit.begin(); dit.ok(); ++dit)
     {
-        const FArrayBox &fab_1 = lev_dat_1[dit];
+        FArrayBox &fab_1 = lev_dat_1[dit];
         FArrayBox &fab_2 = lev_dat_2[dit];
-        // BoxIterator bit(fab_1.box());
-        BoxIterator bit(lev_dat_1.disjointBoxLayout()[dit]);
+        Box b = fab_2.box();
+        BoxIterator bit(b);
         for (bit.begin(); bit.ok(); ++bit)
         {
             IntVect iv = bit();
-            for (int icomp = 0; icomp < lev_dat_1.nComp(); ++icomp)
-            {
-//                Real difference = fab_1(iv, icomp) - fab_2(iv, icomp);
-                fab_2(iv, c_phi_0) = fab_1(iv, c_phi);
-            }
+            //            for (int icomp = 0; icomp < lev_dat_1.nComp();
+            //            ++icomp)
+            //            {
+            //                Real difference = fab_1(iv, icomp) - fab_2(iv,
+            //                icomp); cout << "hdf5: " << fab_1(iv, c_phi) <<
+            //                endl;
+            fab_2(iv, c_phi_0) = fab_1(iv, c_phi);
+            //                cout << "hdf5: " << fab_1(iv, c_phi) << endl;
+
+            //            }
         }
     }
 }
@@ -63,42 +73,38 @@ void readHDF5(LevelData<FArrayBox> &a_multigrid_vars,
 {
 #ifdef CH_USE_HDF5
 
-    HDF5Handle handle_1(a_params.read_from_file, HDF5Handle::OPEN_RDONLY);
+    HDF5Handle handle(a_params.read_from_file, HDF5Handle::OPEN_RDONLY);
+
+    pout() << "Reading data from " << a_params.read_from_file << endl;
+
     HDF5HeaderData header;
-    header.readFromFile(handle_1);
+    header.readFromFile(handle);
 
-    // read max level
-    if (header.m_int.find("max_level") == header.m_int.end())
-        MayDay::Error("File 1 does not contain max_level");
-    int max_level_1 = header.m_int["max_level"];
+    // Read file
+    const DisjointBoxLayout &level_domain = a_multigrid_vars.disjointBoxLayout();
+    Real dx, dt, time;
+    Box box;
+    int ref_ratio;
 
-    bool disagree = false;
+    Copier exchange_copier;
+    LevelData<FArrayBox> level_data_noghost(level_domain, NUM_GRCHOMBO_VARS, 0 * IntVect::Unit);
+    LevelData<FArrayBox> level_data_ghost(level_domain, NUM_GRCHOMBO_VARS, 3 * IntVect::Unit);
 
-    int max_comparison_level = max_level_1;
-//    pp.query("max_comparison_level", max_comparison_level);
+    readLevel(handle, ilev, level_data_noghost, dx, dt, time, box,
+                  ref_ratio, level_data_noghost.interval(), false);
 
+    level_data_noghost.copyTo(level_data_ghost);
+//    defineExchangeCopier(level_domain, level_data_noghost.disjointBoxLayout(), exchange_copier);
+//    level_data_ghost.exchange(exchange_copier);
 
-//    for (int ilev = 0; ilev <= max_comparison_level; ++ilev)
-//    {
+    LevelData<FArrayBox> level_data_readin(a_multigrid_vars.disjointBoxLayout(),
+                                           level_data_ghost.nComp(),
+                                           level_data_ghost.ghostVect());
+    level_data_ghost.copyTo(level_data_readin);
 
-        // Read file 1
-    LevelData<FArrayBox> level_data_1;
-    Real dx_1, dt_1, time_1;
-    Box box_1;
-    int ref_ratio_1;
-    readLevel(handle_1, ilev, level_data_1, dx_1, dt_1, time_1, box_1,
-              ref_ratio_1, level_data_1.interval());
+    read_level_data(level_data_readin, a_multigrid_vars);
 
-        // level_data_1 and level_data_2 might have different box layouts so
-        // need to do a copy
-    LevelData<FArrayBox> level_data_2_copy(level_data_1.disjointBoxLayout(),
-                                           level_data_1.nComp(),
-                                           level_data_1.ghostVect());
-    a_multigrid_vars.copyTo(level_data_2_copy);
-    read_level_data(level_data_1, level_data_2_copy);
-//    }
-
-    handle_1.close();
+    handle.close();
 
 #endif
 }

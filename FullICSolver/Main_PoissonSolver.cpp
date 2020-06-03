@@ -101,7 +101,9 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
         set_initial_conditions(*multigrid_vars[ilev], *dpsi[ilev], vectDx[ilev],
                                a_params);
 
- //       readHDF5(*multigrid_vars[ilev], a_params, ilev);
+        if (a_params.read_from_file != "none"){
+            readHDF5(*multigrid_vars[ilev], a_params, ilev);
+        }
         // prepare temp dx, domain vars for next level
         dxLev /= a_params.refRatio[ilev];
         domLev.refine(a_params.refRatio[ilev]);
