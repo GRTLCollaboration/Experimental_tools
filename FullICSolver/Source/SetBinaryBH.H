@@ -146,34 +146,38 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
                const FArrayBox &a_grad_multigrid)
 {
 
+    Real ricci_tensor[3][3] = {0};
+    Real h[3][3];
+    h[0][0]=multigrid_vars_box(iv, c_h11);
+    h[1][1]=multigrid_vars_box(iv, c_h22);
+    h[2][2]=multigrid_vars_box(iv, c_h33);
+    h[0][1]=multigrid_vars_box(iv, c_h12);
+    h[0][2]=multigrid_vars_box(iv, c_h13);
+    h[1][2]=multigrid_vars_box(iv, c_h23);
+    h[0][1]=h[1][0];
+    h[0][2]=h[2][0];
+    h[1][2]=h[2][1];
+    
+    Real h_UU[3][3];
+
+    for (int i = 0; i < SpaceDim; i++)
+    {
+        for (int j = 0; j < SpaceDim; j++)
+        {
+            ricci_tensor[i][j] += 0;
+
+        }
+    }
+
     Real out_ricci = 0;
-    Real trace =     (a_grad_multigrid(iv, 3 * c_V0_0 + 0) +
-                      a_grad_multigrid(iv, 3 * c_V1_0 + 1) +
-                      a_grad_multigrid(iv, 3 * c_V2_0 + 2));
 
-	multigrid_vars_box(iv, c_A11_0) = 3. / 4. * 
-			(a_grad_multigrid(iv, 3 * c_V0_0 + 0)
-			 + a_grad_multigrid(iv, 3 * c_V0_0 + 0)) - 1. / 2. * trace;
-
-	multigrid_vars_box(iv, c_A22_0) = 3. / 4. * 
-            (a_grad_multigrid(iv, 3 * c_V1_0 + 1)
-             + a_grad_multigrid(iv, 3 * c_V1_0 + 1)) - 1. / 2. * trace;
-
-	multigrid_vars_box(iv, c_A33_0) = 3. / 4. * 
-            (a_grad_multigrid(iv, 3 * c_V2_0 + 2)
-             + a_grad_multigrid(iv, 3 * c_V2_0 + 2)) - 1. / 2. * trace;
-
-	multigrid_vars_box(iv, c_A12_0) = 3. / 4. * 
-            (a_grad_multigrid(iv, 3 * c_V0_0 + 1)
-             + a_grad_multigrid(iv, 3 * c_V1_0 + 0));
-
-	multigrid_vars_box(iv, c_A13_0) = 3. / 4. * 
-            (a_grad_multigrid(iv, 3 * c_V0_0 + 2)
-             + a_grad_multigrid(iv, 3 * c_V2_0 + 0));
-
-	multigrid_vars_box(iv, c_A23_0) = 3. / 4. * 
-            (a_grad_multigrid(iv, 3 * c_V2_0 + 1)
-             + a_grad_multigrid(iv, 3 * c_V1_0 + 2));
+    for (int i = 0; i < SpaceDim; i++)
+    {
+        for (int j = 0; j < SpaceDim; j++)
+        {
+            out_ricci += h_UU[i][j]*ricci_tensor[i][j];
+        }
+    }
 
     return out_ricci = 0;
 }
