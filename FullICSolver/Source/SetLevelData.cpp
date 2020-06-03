@@ -265,7 +265,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             // Ricci term
             get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
                       grad_multigrid);
-                      
+
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
             A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
@@ -318,7 +318,7 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
 
         // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
         BoxIterator bit(this_box);
