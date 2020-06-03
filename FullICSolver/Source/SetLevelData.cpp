@@ -117,12 +117,12 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
                 my_pi_function(loc, a_params.pi_amplitude,
                                a_params.pi_wavelength, a_params.domainLength);
 
-			multigrid_vars_box(iv, c_h11_0) = 1.0;
-			multigrid_vars_box(iv, c_h12_0) = 0.0;
-			multigrid_vars_box(iv, c_h13_0) = 0.0;
-			multigrid_vars_box(iv, c_h22_0) = 1.0;
-			multigrid_vars_box(iv, c_h23_0) = 0.0;
-			multigrid_vars_box(iv, c_h33_0) = 1.0;
+            multigrid_vars_box(iv, c_h11_0) = 1.0;
+            multigrid_vars_box(iv, c_h12_0) = 0.0;
+            multigrid_vars_box(iv, c_h13_0) = 0.0;
+            multigrid_vars_box(iv, c_h22_0) = 1.0;
+            multigrid_vars_box(iv, c_h23_0) = 0.0;
+            multigrid_vars_box(iv, c_h33_0) = 1.0;
         }
     }
 } // end set_initial_conditions
@@ -159,14 +159,14 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
 
-        // FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        // get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
-        //           a_dx, grad_multigrid, a_params);
+        FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
+                  a_dx, grad_multigrid, a_params);
 
-        // FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        // get_mixed_grad2(this_box, multigrid_vars_box,
-        //                 Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
-        //                 a_params);
+        FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_mixed_grad2(this_box, multigrid_vars_box,
+                        Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
+                        a_params);
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
@@ -186,6 +186,10 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params,
                       grad_multigrid);
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
+
+            // Ricci term
+            get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
+                      grad_multigrid, grad2_multigrid, mixed_grad2_multigrid);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -273,10 +277,6 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
                       grad_multigrid);
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
-            // Ricci term
- //           get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
- //                     grad_multigrid);
-
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
             A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
@@ -348,8 +348,7 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             Real pi_0 = multigrid_vars_box(iv, c_pi_0);
             set_Aij_0(multigrid_vars_box, iv, loc, a_dx, a_params,
                       grad_multigrid);
-            //            set_binary_bh_Aij(multigrid_vars_box, iv, loc,
-            //            a_params);
+            set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -614,4 +613,3 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
         }
     }
 }
-                  
