@@ -180,14 +180,44 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
     h_UU[1][2] = (h[0][1] * h[2][0] - h[0][0] * h[2][1]) * det_inverse;
     h_UU[2][1] = (h[1][0] * h[0][2] - h[0][0] * h[1][2]) * det_inverse;
 
+    Real d1_h[3][3][3];
+    Real d1_hUU[3][3][3];
+    Real d2_h[3][3][3][3];
+
     for (int i = 0; i < SpaceDim; i++)
     {
         for (int j = 0; j < SpaceDim; j++)
         {
-            ricci_tensor[i][j] += 0;
+            for (int k = 0; k < SpaceDim; k++)
+            {
+                for (int l = 0; l < SpaceDim; l++)
+                {
+                    ricci_tensor[i][j] +=
+                        0.5 * d1_hUU[k][l][k] *
+                            (d1_h[j][l][i] + d1_h[i][k][j] - d1_h[i][j][l]) +
+                        0.5 * h_UU[k][l] *
+                            (d2_h[i][l][j][k] + d2_h[j][l][i][k] -
+                             d2_h[i][j][k][l] - d2_h[k][l][i][j]) -
+                        0.5 * d1_hUU[k][l][j] * d1_h[k][l][i];
+
+                    for (int m = 0; m < SpaceDim; m++)
+                    {
+                        for (int n = 0; n < SpaceDim; n++)
+                        {
+                            ricci_tensor[i][j] +=
+                                0.25 * h_UU[m][n] * h_UU[k][l] *
+                                (d1_h[k][l][n] *
+                                     (d1_h[i][m][j] + d1_h[j][m][i] -
+                                      d1_h[i][j][m]) -
+                                 d1_h[m][k][i] * d1_h[n][l][j] -
+                                 2 * d1_h[i][k][m] * d1_h[j][n][l] +
+                                 2 * d1_h[i][k][m] * d1_h[j][l][n]);
+                        }
+                    }
+                }
+            }
         }
     }
-
     Real out_ricci = 0;
 
     for (int i = 0; i < SpaceDim; i++)
