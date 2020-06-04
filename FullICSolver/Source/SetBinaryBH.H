@@ -288,6 +288,6 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
         }
     }
 
-    return out_ricci = 0;
+    return out_ricci;
 }
 #endif /* SETBINARYBH_HPP */

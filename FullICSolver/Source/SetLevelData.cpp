@@ -195,9 +195,11 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
+            Real ricci_term = get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
                       grad_multigrid, grad2_multigrid, mixed_grad2_multigrid,
                       grad_h_UU);
+            
+            pout() << "ricci term is " << ricci_term;
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
