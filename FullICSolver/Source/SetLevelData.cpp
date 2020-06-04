@@ -198,9 +198,9 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = get_ricci(
-                multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid,
-                grad2_multigrid, mixed_grad2_multigrid, grad_h_UU);
+            Real ricci = get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
+                                   grad_multigrid, grad2_multigrid,
+                                   mixed_grad2_multigrid, grad_h_UU);
 
             pout() << "ricci term is " << ricci << endl;
 
@@ -216,7 +216,8 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            rhs_box(iv, c_psi) = 0.125 * ricci * psi_0 +
+            rhs_box(iv, c_psi) =
+                0.125 * ricci * psi_0 +
                 0.125 * (m - 8.0 * M_PI * a_params.G_Newton * pow(pi_0, 2.0)) *
                     pow(psi_0, 5.0) -
                 0.125 * A2 * pow(psi_0, -7.0) -
@@ -310,9 +311,9 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = get_ricci(
-                multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid,
-                grad2_multigrid, mixed_grad2_multigrid, grad_h_UU);
+            Real ricci = get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
+                                   grad_multigrid, grad2_multigrid,
+                                   mixed_grad2_multigrid, grad_h_UU);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -326,8 +327,9 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            integrand_box(iv, 0) = - 1.5 * ricci * pow(psi_0, -4.0)
-                -1.5 * (m - 8.0 * M_PI * a_params.G_Newton * pow(pi_0, 2.0)) +
+            integrand_box(iv, 0) =
+                -1.5 * ricci * pow(psi_0, -4.0) -
+                1.5 * (m - 8.0 * M_PI * a_params.G_Newton * pow(pi_0, 2.0)) +
                 1.5 * A2 * pow(psi_0, -12.0) +
                 24.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) *
                     pow(psi_0, -4.0) +
@@ -411,9 +413,9 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = get_ricci(
-                multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid,
-                grad2_multigrid, mixed_grad2_multigrid, grad_h_UU);
+            Real ricci = get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
+                                   grad_multigrid, grad2_multigrid,
+                                   mixed_grad2_multigrid, grad_h_UU);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -561,9 +563,9 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = get_ricci(
-                multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid,
-                grad2_multigrid, mixed_grad2_multigrid, grad_h_UU);
+            Real ricci = get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
+                                   grad_multigrid, grad2_multigrid,
+                                   mixed_grad2_multigrid, grad_h_UU);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -577,8 +579,9 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            aCoef_box(iv, c_psi) = - 0.125 * ricci
-                -0.625 * (m - 8.0 * M_PI * a_params.G_Newton * pow(pi_0, 2.0)) *
+            aCoef_box(iv, c_psi) =
+                -0.125 * ricci -
+                0.625 * (m - 8.0 * M_PI * a_params.G_Newton * pow(pi_0, 2.0)) *
                     pow(psi_0, 4.0) -
                 0.875 * A2 * pow(psi_0, -8.0) +
                 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0);
@@ -638,9 +641,10 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
 
         // now set non zero terms - const across whole box
         // Conformally flat, and lapse = 1
-        grchombo_vars_box.setVal(1.0, c_h11);
-        grchombo_vars_box.setVal(1.0, c_h22);
-        grchombo_vars_box.setVal(1.0, c_h33);
+        // Comment for non conformally flat data
+        // grchombo_vars_box.setVal(1.0, c_h11);
+        // grchombo_vars_box.setVal(1.0, c_h22);
+        // grchombo_vars_box.setVal(1.0, c_h33);
         grchombo_vars_box.setVal(1.0, c_lapse);
 
         // constant K
@@ -704,6 +708,19 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
                 multigrid_vars_box(iv, c_A23_0) * factor;
             grchombo_vars_box(iv, c_A33) =
                 multigrid_vars_box(iv, c_A33_0) * factor;
+
+            grchombo_vars_box(iv, c_h11) =
+                multigrid_vars_box(iv, c_h11_0);
+            grchombo_vars_box(iv, c_h12) =
+                multigrid_vars_box(iv, c_h12_0);
+            grchombo_vars_box(iv, c_h13) =
+                multigrid_vars_box(iv, c_h13_0);
+            grchombo_vars_box(iv, c_h22) =
+                multigrid_vars_box(iv, c_h22_0);
+            grchombo_vars_box(iv, c_h23) =
+                multigrid_vars_box(iv, c_h23_0);
+            grchombo_vars_box(iv, c_h33) =
+                multigrid_vars_box(iv, c_h33_0);
         }
     }
 }
