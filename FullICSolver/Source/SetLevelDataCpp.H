@@ -35,11 +35,77 @@ inline RealVect get_grad(const Box &a_b, const FArrayBox &multigrid_vars_box,
                              a_dx[idir];
 
                 a_grad_of_variable(a_iv, 3 * icomp + idir) = grad[idir];
-
             }
         }
     }
 } // end get_grad
+
+// computes the gradient of the variable you want in a box, i.e. d_i phi
+inline RealVect get_rhograd(const Box &a_b, const FArrayBox &multigrid_vars_box,
+                            const RealVect &a_dx, FArrayBox &a_rho_grad,
+                            const PoissonParameters &a_params)
+{
+    BoxIterator bit(a_b);
+    for (bit.begin(); bit.ok(); ++bit)
+    {
+        IntVect a_iv = bit();
+        // set the phi value - need the distance from centre
+        RealVect loc(a_iv + 0.5 * RealVect::Unit);
+        loc *= a_dx;
+        loc -= a_params.domainLength / 2.0;
+
+        RealVect grad = {0.0, 0.0, 0.0};
+        for (int idir = 0; idir < SpaceDim; ++idir)
+        {
+            IntVect iv_offset1 = a_iv;
+            IntVect iv_offset2 = a_iv;
+            iv_offset1[idir] -= 1;
+            iv_offset2[idir] += 1;
+
+            // 2nd order stencils for now
+            grad[idir] = 0.5 *
+                         (multigrid_vars_box(iv_offset2, c_phi_0) -
+                          multigrid_vars_box(iv_offset1, c_phi_0)) /
+                         a_dx[idir];
+        }
+
+        Real h[3][3];
+        h[0][0] = multigrid_vars_box(a_iv, c_h11_0);
+        h[1][1] = multigrid_vars_box(a_iv, c_h22_0);
+        h[2][2] = multigrid_vars_box(a_iv, c_h33_0);
+        h[0][1] = multigrid_vars_box(a_iv, c_h12_0);
+        h[0][2] = multigrid_vars_box(a_iv, c_h13_0);
+        h[1][2] = multigrid_vars_box(a_iv, c_h23_0);
+        h[0][1] = h[1][0];
+        h[0][2] = h[2][0];
+        h[1][2] = h[2][1];
+
+        Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
+                   h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
+                   h[0][2] * (h[1][0] * h[2][1] - h[1][1] * h[2][0]);
+
+        Real h_UU[3][3];
+        Real det_inverse = 1. / det;
+        h_UU[0][0] = (h[1][1] * h[2][2] - h[1][2] * h[2][1]) * det_inverse;
+        h_UU[1][1] = (h[0][0] * h[2][2] - h[0][2] * h[2][0]) * det_inverse;
+        h_UU[2][2] = (h[0][0] * h[1][1] - h[1][0] * h[0][1]) * det_inverse;
+        h_UU[0][1] = (h[2][0] * h[1][2] - h[1][0] * h[2][2]) * det_inverse;
+        h_UU[1][0] = (h[0][2] * h[2][1] - h[0][1] * h[2][2]) * det_inverse;
+        h_UU[0][2] = (h[1][0] * h[2][1] - h[1][1] * h[2][0]) * det_inverse;
+        h_UU[2][0] = (h[0][1] * h[1][2] - h[1][1] * h[0][2]) * det_inverse;
+        h_UU[1][2] = (h[0][1] * h[2][0] - h[0][0] * h[2][1]) * det_inverse;
+        h_UU[2][1] = (h[1][0] * h[0][2] - h[0][0] * h[1][2]) * det_inverse;
+
+        a_rho_grad(a_iv, 0) = 0.0;
+        for (int i = 0; i < SpaceDim; ++i)
+        {
+            for (int j = 0; j < SpaceDim; ++j)
+            {
+                a_rho_grad(a_iv, 0) += 0.5 * h_UU[i][j] * grad[i] * grad[j];
+            }
+        }
+    }
+} // end get_rhograd
 
 // computes the second derivative of the variable you want in a box, i.e. d_i
 // d_i phi
@@ -204,12 +270,17 @@ inline RealVect get_inverse(const Box &a_b, // Should this be RealVect or Real
                    h[0][2] * (h[1][0] * h[2][1] - h[1][1] * h[2][0]);
 
         Real det_inverse = 1. / det;
-        a_inverse(a_iv, 0) = (h[1][1] * h[2][2] - h[1][2] * h[2][1]) * det_inverse;
-        a_inverse(a_iv, 1) = (h[0][0] * h[2][2] - h[0][2] * h[2][0]) * det_inverse;
-        a_inverse(a_iv, 2) = (h[0][0] * h[1][1] - h[1][0] * h[0][1]) * det_inverse;
-        a_inverse(a_iv, 3) = (h[2][0] * h[1][2] - h[1][0] * h[2][2]) * det_inverse;
-        a_inverse(a_iv, 4) = (h[0][2] * h[2][1] - h[0][1] * h[2][2]) * det_inverse;
-        a_inverse(a_iv, 5) = (h[1][0] * h[2][1] - h[1][1] * h[2][0]) * det_inverse;
-
+        a_inverse(a_iv, 0) =
+            (h[1][1] * h[2][2] - h[1][2] * h[2][1]) * det_inverse; // h_UU[0][0]
+        a_inverse(a_iv, 1) =
+            (h[0][0] * h[2][2] - h[0][2] * h[2][0]) * det_inverse; // h_UU[0][0]
+        a_inverse(a_iv, 2) =
+            (h[0][0] * h[1][1] - h[1][0] * h[0][1]) * det_inverse; // h_UU[0][0]
+        a_inverse(a_iv, 3) =
+            (h[2][0] * h[1][2] - h[1][0] * h[2][2]) * det_inverse; // h_UU[0][0]
+        a_inverse(a_iv, 4) =
+            (h[0][2] * h[2][1] - h[0][1] * h[2][2]) * det_inverse; // h_UU[0][0]
+        a_inverse(a_iv, 5) =
+            (h[1][0] * h[2][1] - h[1][1] * h[2][0]) * det_inverse; // h_UU[0][0]
     }
 } // end get_inverse
