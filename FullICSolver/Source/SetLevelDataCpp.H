@@ -35,8 +35,7 @@ inline RealVect get_grad(const Box &a_b, const FArrayBox &multigrid_vars_box,
                              a_dx[idir];
 
                 a_grad_of_variable(a_iv, 3 * icomp + idir) = grad[idir];
-                //				pout() <<
-                // a_grad_of_variable(a_iv, 3*icomp + idir) << endl;
+
             }
         }
     }
@@ -119,7 +118,7 @@ inline RealVect get_mixed_grad2(const Box &a_b,
                     iv_offset4[idir2] += 1;
 
                     // 2nd order stencils for now
-                    mixed_grad2[idir1 + idir2] =
+                    mixed_grad2[idir1 + idir2 - 1] =
                         (multigrid_vars_box(iv_offset1, icomp) +
                          multigrid_vars_box(iv_offset2, icomp) -
                          multigrid_vars_box(iv_offset3, icomp) -
@@ -127,7 +126,7 @@ inline RealVect get_mixed_grad2(const Box &a_b,
                         (4 * a_dx[idir1] * a_dx[idir2]);
 
                     a_mixed_grad2_of_variable(a_iv, 3 * icomp + idir1 + idir2) =
-                        mixed_grad2[idir1 + idir2];
+                        mixed_grad2[idir1 + idir2 - 1];
                 }
             }
         }

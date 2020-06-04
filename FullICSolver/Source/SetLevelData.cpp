@@ -142,6 +142,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
         FArrayBox &rhs_box = a_rhs[dit()];
         rhs_box.setVal(0.0, 0);
         Box this_box = rhs_box.box(); // no ghost cells
+        Box this_box_ghosts = multigrid_vars_box.box();
 
         // calculate the laplacian of Psi across the box
         FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
@@ -159,21 +160,24 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
 
+
         FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
                   a_dx, grad_multigrid, a_params);
+
 
         FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_mixed_grad2(this_box, multigrid_vars_box,
                         Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
                         a_params);
 
-        FArrayBox h_UU(this_box, 6);
-        get_inverse(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
+        FArrayBox h_UU(this_box_ghosts, 6);
+        get_inverse(this_box_ghosts, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
                     a_dx, h_UU, a_params);
 
         FArrayBox grad_h_UU(this_box, 3 * 6);
         get_grad(this_box, h_UU, Interval(0, 5), a_dx, grad_h_UU, a_params);
+
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
