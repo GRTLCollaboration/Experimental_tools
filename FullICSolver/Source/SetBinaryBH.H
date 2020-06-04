@@ -151,7 +151,8 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
                const PoissonParameters &a_params,
                const FArrayBox &a_grad_multigrid,
                const FArrayBox &a_grad2_multigrid,
-               const FArrayBox &a_mixed_grad2_multigrid)
+               const FArrayBox &a_mixed_grad2_multigrid,
+               const FArrayBox &a_grad_h_UU)
 {
 
     Real ricci_tensor[3][3] = {0};
@@ -207,7 +208,17 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
         d2_h[1][0][i][i] = d2_h[0][1][i][i];
         d2_h[2][0][i][i] = d2_h[0][2][i][i];
         d2_h[2][1][i][i] = d2_h[1][2][i][i];
-        
+
+        d1_hUU[0][0][i] = a_grad_h_UU(iv, 3 * 0 + i);
+        d1_hUU[1][1][i] = a_grad_h_UU(iv, 3 * 1 + i);
+        d1_hUU[2][2][i] = a_grad_h_UU(iv, 3 * 2 + i);
+        d1_hUU[0][1][i] = a_grad_h_UU(iv, 3 * 3 + i);
+        d1_hUU[0][2][i] = a_grad_h_UU(iv, 3 * 4 + i);
+        d1_hUU[1][2][i] = a_grad_h_UU(iv, 3 * 5 + i);
+        d1_hUU[1][0][i] = d1_hUU[0][1][i];
+        d1_hUU[2][0][i] = d1_hUU[0][2][i];
+        d1_hUU[2][1][i] = d1_hUU[1][2][i];
+
         for (int j = i+1; i < SpaceDim; i++)
         {
             d2_h[0][0][i][j] = a_mixed_grad2_multigrid(iv, 3 * c_h11_0 + i + j);
@@ -279,5 +290,4 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
 
     return out_ricci = 0;
 }
-
 #endif /* SETBINARYBH_HPP */

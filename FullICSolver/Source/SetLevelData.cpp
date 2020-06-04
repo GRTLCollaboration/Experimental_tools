@@ -168,6 +168,15 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
                         Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
                         a_params);
 
+        FArrayBox h_UU(this_box, 6);
+        get_inverse(this_box, multigrid_vars_box,
+                        Interval(c_h11_0, c_h33_0), a_dx, h_UU,
+                        a_params);
+
+        FArrayBox grad_h_UU(this_box, 3 * 6);
+        get_grad(this_box, h_UU, Interval(0, 5), a_dx,
+                 grad_h_UU, a_params);
+
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
         {
@@ -189,7 +198,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
 
             // Ricci term
             get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
-                      grad_multigrid, grad2_multigrid, mixed_grad2_multigrid);
+                      grad_multigrid, grad2_multigrid, mixed_grad2_multigrid, grad_h_UU);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
