@@ -198,11 +198,11 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci_term = get_ricci(
+            Real ricci = get_ricci(
                 multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid,
                 grad2_multigrid, mixed_grad2_multigrid, grad_h_UU);
 
-            pout() << "ricci term is " << ricci_term << endl;
+            pout() << "ricci term is " << ricci << endl;
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -216,7 +216,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            rhs_box(iv, c_psi) =
+            rhs_box(iv, c_psi) = 0.125 * ricci * psi_0 +
                 0.125 * (m - 8.0 * M_PI * a_params.G_Newton * pow(pi_0, 2.0)) *
                     pow(psi_0, 5.0) -
                 0.125 * A2 * pow(psi_0, -7.0) -
@@ -254,6 +254,28 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
         FArrayBox &integrand_box = a_integrand[dit()];
         integrand_box.setVal(0.0, 0);
         Box this_box = integrand_box.box(); // no ghost cells
+        Box this_box_ghosts = multigrid_vars_box.box();
+
+        // calculate gradients for constructing rho and Aij
+        FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
+                 grad_multigrid, a_params);
+
+        FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
+                  a_dx, grad_multigrid, a_params);
+
+        FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_mixed_grad2(this_box, multigrid_vars_box,
+                        Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
+                        a_params);
+
+        FArrayBox h_UU(this_box_ghosts, 6);
+        get_inverse(this_box_ghosts, multigrid_vars_box,
+                    Interval(c_h11_0, c_h33_0), a_dx, h_UU, a_params);
+
+        FArrayBox grad_h_UU(this_box, 3 * 6);
+        get_grad(this_box, h_UU, Interval(0, 5), a_dx, grad_h_UU, a_params);
 
         // calculate the laplacian of Psi across the box
         FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
@@ -262,14 +284,11 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
 
         // calculate the rho contribution from gradients of phi
         FArrayBox rho_gradient(this_box, 1);
-        FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
-                            CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
-                            CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
-
-        // calculate gradients for constructing rho and Aij
-        FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
-                 grad_multigrid, a_params);
+        // FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
+        //                     CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
+        //                     CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+        get_rhograd(this_box, multigrid_vars_box, a_dx, rho_gradient,
+                    a_params); // new way to calculate it using hij
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
@@ -290,6 +309,11 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
                       grad_multigrid);
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
+            // Ricci term
+            Real ricci = get_ricci(
+                multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid,
+                grad2_multigrid, mixed_grad2_multigrid, grad_h_UU);
+
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
             A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
@@ -302,7 +326,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            integrand_box(iv, 0) =
+            integrand_box(iv, 0) = - 1.5 * ricci * pow(psi_0, -4.0)
                 -1.5 * (m - 8.0 * M_PI * a_params.G_Newton * pow(pi_0, 2.0)) +
                 1.5 * A2 * pow(psi_0, -12.0) +
                 24.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) *
@@ -332,18 +356,41 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
         FArrayBox &condition_box = a_condition[dit()];
         condition_box.setVal(0.0, 0);
         Box this_box = condition_box.box(); // no ghost cells
+        Box this_box_ghosts = multigrid_vars_box.box();
+
+        // calculate gradients for constructing rho and Aij
+        FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
+                 grad_multigrid, a_params);
+
+        FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
+                  a_dx, grad_multigrid, a_params);
+
+        FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_mixed_grad2(this_box, multigrid_vars_box,
+                        Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
+                        a_params);
+
+        FArrayBox h_UU(this_box_ghosts, 6);
+        get_inverse(this_box_ghosts, multigrid_vars_box,
+                    Interval(c_h11_0, c_h33_0), a_dx, h_UU, a_params);
+
+        FArrayBox grad_h_UU(this_box, 3 * 6);
+        get_grad(this_box, h_UU, Interval(0, 5), a_dx, grad_h_UU, a_params);
+
+        // calculate the laplacian of Psi across the box
+        FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
+        get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
+                      laplace_multigrid, a_params);
 
         // calculate the rho contribution from gradients of phi
         FArrayBox rho_gradient(this_box, 1);
-        FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
-                            CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
-                            CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
-
-        // calculate gradients for constructing rho and Aij
-        FArrayBox grad_multigrid(
-            this_box, 3 * NUM_MULTIGRID_VARS); // doesnt need to be that large
-        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
-                 grad_multigrid, a_params);
+        // FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
+        //                     CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
+        //                     CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+        get_rhograd(this_box, multigrid_vars_box, a_dx, rho_gradient,
+                    a_params); // new way to calculate it using hij
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
@@ -363,6 +410,11 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
                       grad_multigrid);
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
+            // Ricci term
+            Real ricci = get_ricci(
+                multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid,
+                grad2_multigrid, mixed_grad2_multigrid, grad_h_UU);
+
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
             A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
@@ -377,7 +429,7 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            condition_box(iv, 0) =
+            condition_box(iv, 0) = // Need to think how to add here Ricci
                 1.5 *
                     abs((m - 8.0 * M_PI * a_params.G_Newton * pow(pi_0, 2.0))) +
                 1.5 * A2 * pow(psi_0, -7.0) +
@@ -454,17 +506,41 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
         FArrayBox &aCoef_box = a_aCoef[dit()];
         FArrayBox &multigrid_vars_box = a_multigrid_vars[dit()];
         Box this_box = aCoef_box.box();
-
-        // calculate the rho contribution from gradients of phi
-        FArrayBox rho_gradient(this_box, 1);
-        FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
-                            CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
-                            CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+        Box this_box_ghosts = multigrid_vars_box.box();
 
         // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
                  grad_multigrid, a_params);
+
+        FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
+                  a_dx, grad_multigrid, a_params);
+
+        FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
+        get_mixed_grad2(this_box, multigrid_vars_box,
+                        Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
+                        a_params);
+
+        FArrayBox h_UU(this_box_ghosts, 6);
+        get_inverse(this_box_ghosts, multigrid_vars_box,
+                    Interval(c_h11_0, c_h33_0), a_dx, h_UU, a_params);
+
+        FArrayBox grad_h_UU(this_box, 3 * 6);
+        get_grad(this_box, h_UU, Interval(0, 5), a_dx, grad_h_UU, a_params);
+
+        // calculate the laplacian of Psi across the box
+        FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
+        get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
+                      laplace_multigrid, a_params);
+
+        // calculate the rho contribution from gradients of phi
+        FArrayBox rho_gradient(this_box, 1);
+        // FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
+        //                     CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
+        //                     CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+        get_rhograd(this_box, multigrid_vars_box, a_dx, rho_gradient,
+                    a_params); // new way to calculate it using hij
 
         BoxIterator bit(this_box);
         for (bit.begin(); bit.ok(); ++bit)
@@ -484,6 +560,11 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
                       grad_multigrid);
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
+            // Ricci term
+            Real ricci = get_ricci(
+                multigrid_vars_box, iv, loc, a_dx, a_params, grad_multigrid,
+                grad2_multigrid, mixed_grad2_multigrid, grad_h_UU);
+
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
             A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
@@ -496,7 +577,7 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             Real psi_bh = set_binary_bh_psi(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
 
-            aCoef_box(iv, c_psi) =
+            aCoef_box(iv, c_psi) = - 0.125 * ricci
                 -0.625 * (m - 8.0 * M_PI * a_params.G_Newton * pow(pi_0, 2.0)) *
                     pow(psi_0, 4.0) -
                 0.875 * A2 * pow(psi_0, -8.0) +
