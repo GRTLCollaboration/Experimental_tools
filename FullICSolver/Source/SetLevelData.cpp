@@ -146,16 +146,16 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
 
         // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
         FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
-                  a_dx, grad_multigrid, a_params);
+                  a_dx, grad2_multigrid, a_params);
 
         FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_mixed_grad2(this_box, multigrid_vars_box,
-                        Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
+                        Interval(c_h11_0, c_h33_0), a_dx, mixed_grad2_multigrid,
                         a_params);
 
         FArrayBox h_UU(this_box_ghosts, 6);
@@ -259,16 +259,16 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
 
         // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
         FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
-                  a_dx, grad_multigrid, a_params);
+                  a_dx, grad2_multigrid, a_params);
 
         FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_mixed_grad2(this_box, multigrid_vars_box,
-                        Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
+                        Interval(c_h11_0, c_h33_0), a_dx, mixed_grad2_multigrid,
                         a_params);
 
         FArrayBox h_UU(this_box_ghosts, 6);
@@ -362,16 +362,16 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
 
         // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
         FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
-                  a_dx, grad_multigrid, a_params);
+                  a_dx, grad2_multigrid, a_params);
 
         FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_mixed_grad2(this_box, multigrid_vars_box,
-                        Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
+                        Interval(c_h11_0, c_h33_0), a_dx, mixed_grad2_multigrid,
                         a_params);
 
         FArrayBox h_UU(this_box_ghosts, 6);
@@ -512,16 +512,16 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
 
         // calculate gradients for constructing rho and Aij
         FArrayBox grad_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_phi_0), a_dx,
+        get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
         FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
-                  a_dx, grad_multigrid, a_params);
+                  a_dx, grad2_multigrid, a_params);
 
         FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
         get_mixed_grad2(this_box, multigrid_vars_box,
-                        Interval(c_h11_0, c_h33_0), a_dx, grad_multigrid,
+                        Interval(c_h11_0, c_h33_0), a_dx, mixed_grad2_multigrid,
                         a_params);
 
         FArrayBox h_UU(this_box_ghosts, 6);

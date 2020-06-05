@@ -47,9 +47,9 @@ enum
     c_Pi,  //(minus) conjugate momentum
 
 	c_rho,
-	c_S1,
-	c_S2,
-	c_S3,
+	// c_S1,
+	// c_S2,
+	// c_S3,
 	c_Ham,
 
     c_Mom1,
@@ -80,7 +80,7 @@ static constexpr char const *variable_names[NUM_GRCHOMBO_VARS] = {
 
     "B1",     "B2",     "B3",
 
-    "phi",    "Pi", "rho", "S1", "S2", "S3",
+    "phi",    "Pi", "rho",// "S1", "S2", "S3",
 
     "Ham",    "Mom1",   "Mom2",   "Mom3"};
 }

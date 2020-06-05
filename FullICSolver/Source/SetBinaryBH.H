@@ -171,7 +171,7 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
                h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
                h[0][2] * (h[1][0] * h[2][1] - h[1][1] * h[2][0]);
 
-    Real h_UU[3][3];
+    Real h_UU[3][3] = {0};
     Real det_inverse = 1. / det;
     h_UU[0][0] = (h[1][1] * h[2][2] - h[1][2] * h[2][1]) * det_inverse;
     h_UU[1][1] = (h[0][0] * h[2][2] - h[0][2] * h[2][0]) * det_inverse;
@@ -182,6 +182,7 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
     h_UU[2][0] = (h[0][1] * h[1][2] - h[1][1] * h[0][2]) * det_inverse;
     h_UU[1][2] = (h[0][1] * h[2][0] - h[0][0] * h[2][1]) * det_inverse;
     h_UU[2][1] = (h[1][0] * h[0][2] - h[0][0] * h[1][2]) * det_inverse;
+
 
     Real d1_h[3][3][3]= {0};
     Real d1_hUU[3][3][3] = {0};
@@ -242,7 +243,6 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
             d2_h[2][1][j][i] = d2_h[1][2][i][j];
         }
     }
-
 
     for (int i = 0; i < SpaceDim; i++)
     {
