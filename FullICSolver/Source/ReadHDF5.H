@@ -63,6 +63,7 @@ void read_level_data(LevelData<FArrayBox> &lev_dat_1,
                 fab_2(iv, c_h22_0) = fab_1(iv, c_h22);
                 fab_2(iv, c_h23_0) = fab_1(iv, c_h23);
                 fab_2(iv, c_h33_0) = fab_1(iv, c_h33);
+                fab_2(iv, c_psi) = pow(fab_1(iv, c_chi),-0.25);
  //           }
         }
     }
