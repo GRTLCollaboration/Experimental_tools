@@ -183,8 +183,7 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
     h_UU[1][2] = (h[0][1] * h[2][0] - h[0][0] * h[2][1]) * det_inverse;
     h_UU[2][1] = (h[1][0] * h[0][2] - h[0][0] * h[1][2]) * det_inverse;
 
-
-    Real d1_h[3][3][3]= {0};
+    Real d1_h[3][3][3] = {0};
     Real d1_hUU[3][3][3] = {0};
     Real d2_h[3][3][3][3] = {0};
 
@@ -220,7 +219,7 @@ Real get_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
         d1_hUU[2][0][i] = d1_hUU[0][2][i];
         d1_hUU[2][1][i] = d1_hUU[1][2][i];
 
-        for (int j = i+1; i < SpaceDim; i++)
+        for (int j = i + 1; i < SpaceDim; i++)
         {
             d2_h[0][0][i][j] = a_mixed_grad2_multigrid(iv, 3 * c_h11_0 + i + j);
             d2_h[1][1][i][j] = a_mixed_grad2_multigrid(iv, 3 * c_h22_0 + i + j);

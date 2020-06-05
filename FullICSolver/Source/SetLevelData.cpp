@@ -709,18 +709,12 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
             grchombo_vars_box(iv, c_A33) =
                 multigrid_vars_box(iv, c_A33_0) * factor;
 
-            grchombo_vars_box(iv, c_h11) =
-                multigrid_vars_box(iv, c_h11_0);
-            grchombo_vars_box(iv, c_h12) =
-                multigrid_vars_box(iv, c_h12_0);
-            grchombo_vars_box(iv, c_h13) =
-                multigrid_vars_box(iv, c_h13_0);
-            grchombo_vars_box(iv, c_h22) =
-                multigrid_vars_box(iv, c_h22_0);
-            grchombo_vars_box(iv, c_h23) =
-                multigrid_vars_box(iv, c_h23_0);
-            grchombo_vars_box(iv, c_h33) =
-                multigrid_vars_box(iv, c_h33_0);
+            grchombo_vars_box(iv, c_h11) = multigrid_vars_box(iv, c_h11_0);
+            grchombo_vars_box(iv, c_h12) = multigrid_vars_box(iv, c_h12_0);
+            grchombo_vars_box(iv, c_h13) = multigrid_vars_box(iv, c_h13_0);
+            grchombo_vars_box(iv, c_h22) = multigrid_vars_box(iv, c_h22_0);
+            grchombo_vars_box(iv, c_h23) = multigrid_vars_box(iv, c_h23_0);
+            grchombo_vars_box(iv, c_h33) = multigrid_vars_box(iv, c_h33_0);
         }
     }
 }

@@ -54,17 +54,17 @@ void read_level_data(LevelData<FArrayBox> &lev_dat_1,
         for (bit.begin(); bit.ok(); ++bit)
         {
             IntVect iv = bit();
- //           for (int copy_comp = 0; copy_comp < 1; ++copy_comp)
- //           {
-                fab_2(iv, c_phi_0) = fab_1(iv, c_phi);
-                fab_2(iv, c_h11_0) = fab_1(iv, c_h11);
-                fab_2(iv, c_h12_0) = fab_1(iv, c_h12);
-                fab_2(iv, c_h13_0) = fab_1(iv, c_h13);
-                fab_2(iv, c_h22_0) = fab_1(iv, c_h22);
-                fab_2(iv, c_h23_0) = fab_1(iv, c_h23);
-                fab_2(iv, c_h33_0) = fab_1(iv, c_h33);
-                fab_2(iv, c_psi) = pow(fab_1(iv, c_chi),-0.25);
- //           }
+            //           for (int copy_comp = 0; copy_comp < 1; ++copy_comp)
+            //           {
+            fab_2(iv, c_phi_0) = fab_1(iv, c_phi);
+            fab_2(iv, c_h11_0) = fab_1(iv, c_h11);
+            fab_2(iv, c_h12_0) = fab_1(iv, c_h12);
+            fab_2(iv, c_h13_0) = fab_1(iv, c_h13);
+            fab_2(iv, c_h22_0) = fab_1(iv, c_h22);
+            fab_2(iv, c_h23_0) = fab_1(iv, c_h23);
+            fab_2(iv, c_h33_0) = fab_1(iv, c_h33);
+            fab_2(iv, c_psi) = pow(fab_1(iv, c_chi), -0.25);
+            //           }
         }
     }
 }
