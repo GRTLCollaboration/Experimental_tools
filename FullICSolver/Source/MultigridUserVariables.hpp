@@ -32,7 +32,10 @@ enum
     c_A23_0,
     c_A33_0,
 
-    c_R,
+    c_R_0,
+    c_Gamma1_0,
+    c_Gamma2_0,
+    c_Gamma3_0,
 
     NUM_MULTIGRID_VARS
 };
@@ -50,7 +53,7 @@ static constexpr char const *variable_names[NUM_MULTIGRID_VARS] = {
 
 	"A11_0", "A12_0", "A13_0", "A22_0", "A23_0", "A33_0",
     
-    "R"};
+    "R_0", "Gamma1_0", "Gamma2_0", "Gamma3_0"};
 }
 
 // assign an enum to each constraint variable

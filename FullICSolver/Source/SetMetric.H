@@ -83,12 +83,18 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
 
         for (int j = i + 1; i < SpaceDim; i++)
         {
-            d2_h[0][0][i][j] = a_mixed_grad2_multigrid(iv, 3 * c_h11_0 + i + j);
-            d2_h[1][1][i][j] = a_mixed_grad2_multigrid(iv, 3 * c_h22_0 + i + j);
-            d2_h[2][2][i][j] = a_mixed_grad2_multigrid(iv, 3 * c_h33_0 + i + j);
-            d2_h[0][1][i][j] = a_mixed_grad2_multigrid(iv, 3 * c_h12_0 + i + j);
-            d2_h[0][2][i][j] = a_mixed_grad2_multigrid(iv, 3 * c_h13_0 + i + j);
-            d2_h[1][2][i][j] = a_mixed_grad2_multigrid(iv, 3 * c_h23_0 + i + j);
+            d2_h[0][0][i][j] =
+                a_mixed_grad2_multigrid(iv, 3 * c_h11_0 + i + j - 1);
+            d2_h[1][1][i][j] =
+                a_mixed_grad2_multigrid(iv, 3 * c_h22_0 + i + j - 1);
+            d2_h[2][2][i][j] =
+                a_mixed_grad2_multigrid(iv, 3 * c_h33_0 + i + j - 1);
+            d2_h[0][1][i][j] =
+                a_mixed_grad2_multigrid(iv, 3 * c_h12_0 + i + j - 1);
+            d2_h[0][2][i][j] =
+                a_mixed_grad2_multigrid(iv, 3 * c_h13_0 + i + j - 1);
+            d2_h[1][2][i][j] =
+                a_mixed_grad2_multigrid(iv, 3 * c_h23_0 + i + j - 1);
             d2_h[1][0][i][j] = d2_h[0][1][i][j];
             d2_h[2][0][i][j] = d2_h[0][2][i][j];
             d2_h[2][1][i][j] = d2_h[1][2][i][j];
@@ -149,11 +155,96 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
         }
     }
 
-    multigrid_vars_box(iv, c_R) = out_ricci;
+    multigrid_vars_box(iv, c_R_0) = out_ricci;
 }
 
-Real calculate_metric_components(LevelData<FArrayBox> &a_multigrid_vars, const RealVect &a_dx,
-               const PoissonParameters &a_params)
+void set_christoffel(FArrayBox &multigrid_vars_box, const IntVect &iv,
+                     const RealVect &loc, const RealVect &a_dx,
+                     const PoissonParameters &a_params,
+                     const FArrayBox &a_grad_multigrid)
+{
+    Real ricci_tensor[3][3] = {0};
+    Real h[3][3];
+    h[0][0] = multigrid_vars_box(iv, c_h11_0);
+    h[1][1] = multigrid_vars_box(iv, c_h22_0);
+    h[2][2] = multigrid_vars_box(iv, c_h33_0);
+    h[0][1] = multigrid_vars_box(iv, c_h12_0);
+    h[0][2] = multigrid_vars_box(iv, c_h13_0);
+    h[1][2] = multigrid_vars_box(iv, c_h23_0);
+    h[0][1] = h[1][0];
+    h[0][2] = h[2][0];
+    h[1][2] = h[2][1];
+
+    Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
+               h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
+               h[0][2] * (h[1][0] * h[2][1] - h[1][1] * h[2][0]);
+
+    Real h_UU[3][3] = {0};
+    Real det_inverse = 1. / det;
+    h_UU[0][0] = (h[1][1] * h[2][2] - h[1][2] * h[2][1]) * det_inverse;
+    h_UU[1][1] = (h[0][0] * h[2][2] - h[0][2] * h[2][0]) * det_inverse;
+    h_UU[2][2] = (h[0][0] * h[1][1] - h[1][0] * h[0][1]) * det_inverse;
+    h_UU[0][1] = (h[2][0] * h[1][2] - h[1][0] * h[2][2]) * det_inverse;
+    h_UU[1][0] = (h[0][2] * h[2][1] - h[0][1] * h[2][2]) * det_inverse;
+    h_UU[0][2] = (h[1][0] * h[2][1] - h[1][1] * h[2][0]) * det_inverse;
+    h_UU[2][0] = (h[0][1] * h[1][2] - h[1][1] * h[0][2]) * det_inverse;
+    h_UU[1][2] = (h[0][1] * h[2][0] - h[0][0] * h[2][1]) * det_inverse;
+    h_UU[2][1] = (h[1][0] * h[0][2] - h[0][0] * h[1][2]) * det_inverse;
+
+    Real d1_h[3][3][3] = {0};
+    Real d1_hUU[3][3][3] = {0};
+    Real d2_h[3][3][3][3] = {0};
+
+    for (int i = 0; i < SpaceDim; i++)
+    {
+        d1_h[0][0][i] = a_grad_multigrid(iv, 3 * c_h11_0 + i);
+        d1_h[1][1][i] = a_grad_multigrid(iv, 3 * c_h22_0 + i);
+        d1_h[2][2][i] = a_grad_multigrid(iv, 3 * c_h33_0 + i);
+        d1_h[0][1][i] = a_grad_multigrid(iv, 3 * c_h12_0 + i);
+        d1_h[0][2][i] = a_grad_multigrid(iv, 3 * c_h13_0 + i);
+        d1_h[1][2][i] = a_grad_multigrid(iv, 3 * c_h23_0 + i);
+        d1_h[1][0][i] = d1_h[0][1][i];
+        d1_h[2][0][i] = d1_h[0][2][i];
+        d1_h[2][1][i] = d1_h[1][2][i];
+    }
+
+    Real chris[3][3][3] = {0};
+    for (int i = 0; i < SpaceDim; i++)
+    {
+        for (int j = 0; j < SpaceDim; j++)
+        {
+            for (int k = 0; k < SpaceDim; k++)
+            {
+                for (int l = 0; l < SpaceDim; l++)
+                {
+                    chris[i][j][k] += 0.5 * h_UU[k][l] *
+                                (d1_h[i][l][j] + d1_h[j][l][i] -
+                                      d1_h[i][j][l]);
+                }
+            }
+        }
+    }
+
+    Real Gamma[3] = {0};
+    for (int i = 0; i < SpaceDim; i++)
+    {
+        for (int j = 0; j < SpaceDim; j++)
+        {
+            for (int k = 0; k < SpaceDim; k++)
+            {
+                Gamma[k] += h_UU[i][j] * chris[i][j][k];
+            }
+        }
+    }
+
+    multigrid_vars_box(iv, c_Gamma1_0) = Gamma[0];
+    multigrid_vars_box(iv, c_Gamma2_0) = Gamma[1];
+    multigrid_vars_box(iv, c_Gamma3_0) = Gamma[2];
+}
+
+Real calculate_metric_components(LevelData<FArrayBox> &a_multigrid_vars,
+                                 const RealVect &a_dx,
+                                 const PoissonParameters &a_params)
 {
 
     DataIterator dit = a_multigrid_vars.dataIterator();
@@ -202,6 +293,9 @@ Real calculate_metric_components(LevelData<FArrayBox> &a_multigrid_vars, const R
             set_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
                       grad_multigrid, grad2_multigrid, mixed_grad2_multigrid,
                       grad_h_UU);
+
+            set_christoffel(multigrid_vars_box, iv, loc, a_dx, a_params,
+                            grad_multigrid);
         }
     }
 }

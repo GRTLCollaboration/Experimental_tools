@@ -182,7 +182,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = multigrid_vars_box(iv, c_R);
+            Real ricci = multigrid_vars_box(iv, c_R_0);
 
             pout() << "ricci term is " << ricci << endl;
 
@@ -277,7 +277,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = multigrid_vars_box(iv, c_R);
+            Real ricci = multigrid_vars_box(iv, c_R_0);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -361,7 +361,7 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = multigrid_vars_box(iv, c_R);
+            Real ricci = multigrid_vars_box(iv, c_R_0);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -493,7 +493,7 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = multigrid_vars_box(iv, c_R);
+            Real ricci = multigrid_vars_box(iv, c_R_0);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
