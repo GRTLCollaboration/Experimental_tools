@@ -17,7 +17,7 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
                const FArrayBox &a_mixed_grad2_multigrid,
                const FArrayBox &a_grad_h_UU)
 {
-    Real ricci_tensor[3][3] = {0};
+
     Real h[3][3];
     h[0][0] = multigrid_vars_box(iv, c_h11_0);
     h[1][1] = multigrid_vars_box(iv, c_h22_0);
@@ -111,6 +111,7 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
         }
     }
 
+    Real ricci_tensor[3][3] = {0};
     for (int i = 0; i < SpaceDim; i++)
     {
         for (int j = 0; j < SpaceDim; j++)
@@ -121,7 +122,7 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
                 {
                     ricci_tensor[i][j] +=
                         0.5 * d1_hUU[k][l][k] *
-                            (d1_h[j][l][i] + d1_h[i][k][j] - d1_h[i][j][l]) +
+                            (d1_h[j][l][i] + d1_h[i][l][j] - d1_h[i][j][l]) +
                         0.5 * h_UU[k][l] *
                             (d2_h[i][l][j][k] + d2_h[j][l][i][k] -
                              d2_h[i][j][k][l] - d2_h[k][l][i][j]) -
