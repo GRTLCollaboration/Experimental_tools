@@ -149,22 +149,6 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
-        FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
-                  a_dx, grad2_multigrid, a_params);
-
-        FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_mixed_grad2(this_box, multigrid_vars_box,
-                        Interval(c_h11_0, c_h33_0), a_dx, mixed_grad2_multigrid,
-                        a_params);
-
-        FArrayBox h_UU(this_box_ghosts, 6);
-        get_inverse(this_box_ghosts, multigrid_vars_box,
-                    Interval(c_h11_0, c_h33_0), a_dx, h_UU, a_params);
-
-        FArrayBox grad_h_UU(this_box, 3 * 6);
-        get_grad(this_box, h_UU, Interval(0, 5), a_dx, grad_h_UU, a_params);
-
         // calculate the laplacian of Psi across the box
         FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
         get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
@@ -198,9 +182,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
-                                   grad_multigrid, grad2_multigrid,
-                                   mixed_grad2_multigrid, grad_h_UU);
+            Real ricci = multigrid_vars_box(iv, c_R);
 
             pout() << "ricci term is " << ricci << endl;
 
@@ -262,22 +244,6 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
-        FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
-                  a_dx, grad2_multigrid, a_params);
-
-        FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_mixed_grad2(this_box, multigrid_vars_box,
-                        Interval(c_h11_0, c_h33_0), a_dx, mixed_grad2_multigrid,
-                        a_params);
-
-        FArrayBox h_UU(this_box_ghosts, 6);
-        get_inverse(this_box_ghosts, multigrid_vars_box,
-                    Interval(c_h11_0, c_h33_0), a_dx, h_UU, a_params);
-
-        FArrayBox grad_h_UU(this_box, 3 * 6);
-        get_grad(this_box, h_UU, Interval(0, 5), a_dx, grad_h_UU, a_params);
-
         // calculate the laplacian of Psi across the box
         FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
         get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
@@ -311,9 +277,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
-                                   grad_multigrid, grad2_multigrid,
-                                   mixed_grad2_multigrid, grad_h_UU);
+            Real ricci = multigrid_vars_box(iv, c_R);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -365,22 +329,6 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
-        FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
-                  a_dx, grad2_multigrid, a_params);
-
-        FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_mixed_grad2(this_box, multigrid_vars_box,
-                        Interval(c_h11_0, c_h33_0), a_dx, mixed_grad2_multigrid,
-                        a_params);
-
-        FArrayBox h_UU(this_box_ghosts, 6);
-        get_inverse(this_box_ghosts, multigrid_vars_box,
-                    Interval(c_h11_0, c_h33_0), a_dx, h_UU, a_params);
-
-        FArrayBox grad_h_UU(this_box, 3 * 6);
-        get_grad(this_box, h_UU, Interval(0, 5), a_dx, grad_h_UU, a_params);
-
         // calculate the laplacian of Psi across the box
         FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
         get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
@@ -413,9 +361,7 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
-                                   grad_multigrid, grad2_multigrid,
-                                   mixed_grad2_multigrid, grad_h_UU);
+            Real ricci = multigrid_vars_box(iv, c_R);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
@@ -515,22 +461,6 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
         get_grad(this_box, multigrid_vars_box, Interval(c_psi_0, c_h33_0), a_dx,
                  grad_multigrid, a_params);
 
-        FArrayBox grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_grad2(this_box, multigrid_vars_box, Interval(c_h11_0, c_h33_0),
-                  a_dx, grad2_multigrid, a_params);
-
-        FArrayBox mixed_grad2_multigrid(this_box, 3 * NUM_MULTIGRID_VARS);
-        get_mixed_grad2(this_box, multigrid_vars_box,
-                        Interval(c_h11_0, c_h33_0), a_dx, mixed_grad2_multigrid,
-                        a_params);
-
-        FArrayBox h_UU(this_box_ghosts, 6);
-        get_inverse(this_box_ghosts, multigrid_vars_box,
-                    Interval(c_h11_0, c_h33_0), a_dx, h_UU, a_params);
-
-        FArrayBox grad_h_UU(this_box, 3 * 6);
-        get_grad(this_box, h_UU, Interval(0, 5), a_dx, grad_h_UU, a_params);
-
         // calculate the laplacian of Psi across the box
         FArrayBox laplace_multigrid(this_box, NUM_CONSTRAINTS_VARS);
         get_laplacian(this_box, multigrid_vars_box, Interval(c_psi, c_V2), a_dx,
@@ -563,9 +493,7 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             set_binary_bh_Aij(multigrid_vars_box, iv, loc, a_params);
 
             // Ricci term
-            Real ricci = get_ricci(multigrid_vars_box, iv, loc, a_dx, a_params,
-                                   grad_multigrid, grad2_multigrid,
-                                   mixed_grad2_multigrid, grad_h_UU);
+            Real ricci = multigrid_vars_box(iv, c_R);
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;

@@ -24,6 +24,8 @@
 #include "computeSum.H"
 #include <iostream>
 
+#include "SetMetric.H"
+
 #include "ReadHDF5.H"
 #ifdef CH_Linux
 // Should be undefined by default
@@ -101,14 +103,18 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
         set_initial_conditions(*multigrid_vars[ilev], *dpsi[ilev], vectDx[ilev],
                                a_params);
 
-        if (a_params.read_from_file != "none"){
+        if (a_params.read_from_file != "none")
+        {
             readHDF5(*multigrid_vars[ilev], a_params, ilev);
         }
+
+        calculate_metric_components(*multigrid_vars[ilev], vectDx[ilev],
+                                    a_params);
+
         // prepare temp dx, domain vars for next level
         dxLev /= a_params.refRatio[ilev];
         domLev.refine(a_params.refRatio[ilev]);
     }
-
 
     // set up linear operator
     int lBase = 0;
