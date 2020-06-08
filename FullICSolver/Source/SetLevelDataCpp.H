@@ -191,7 +191,8 @@ inline RealVect get_mixed_grad2(const Box &a_b,
                          multigrid_vars_box(iv_offset4, icomp)) /
                         (4 * a_dx[idir1] * a_dx[idir2]);
 
-                    a_mixed_grad2_of_variable(a_iv, 3 * icomp + idir1 + idir2 - 1) =
+                    a_mixed_grad2_of_variable(a_iv,
+                                              3 * icomp + idir1 + idir2 - 1) =
                         mixed_grad2[idir1 + idir2 - 1];
                 }
             }
@@ -215,9 +216,36 @@ inline RealVect get_laplacian(const Box &a_b, // Should this be RealVect or Real
         loc *= a_dx;
         loc -= a_params.domainLength / 2.0;
 
+        Real h[3][3];
+        h[0][0] = multigrid_vars_box(a_iv, c_h11_0);
+        h[1][1] = multigrid_vars_box(a_iv, c_h22_0);
+        h[2][2] = multigrid_vars_box(a_iv, c_h33_0);
+        h[0][1] = multigrid_vars_box(a_iv, c_h12_0);
+        h[0][2] = multigrid_vars_box(a_iv, c_h13_0);
+        h[1][2] = multigrid_vars_box(a_iv, c_h23_0);
+        h[0][1] = h[1][0];
+        h[0][2] = h[2][0];
+        h[1][2] = h[2][1];
+
+        Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
+                   h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
+                   h[0][2] * (h[1][0] * h[2][1] - h[1][1] * h[2][0]);
+
+        Real h_UU[3][3];
+        Real det_inverse = 1. / det;
+        h_UU[0][0] = (h[1][1] * h[2][2] - h[1][2] * h[2][1]) * det_inverse;
+        h_UU[1][1] = (h[0][0] * h[2][2] - h[0][2] * h[2][0]) * det_inverse;
+        h_UU[2][2] = (h[0][0] * h[1][1] - h[1][0] * h[0][1]) * det_inverse;
+        h_UU[0][1] = (h[2][0] * h[1][2] - h[1][0] * h[2][2]) * det_inverse;
+        h_UU[1][0] = (h[0][2] * h[2][1] - h[0][1] * h[2][2]) * det_inverse;
+        h_UU[0][2] = (h[1][0] * h[2][1] - h[1][1] * h[2][0]) * det_inverse;
+        h_UU[2][0] = (h[0][1] * h[1][2] - h[1][1] * h[0][2]) * det_inverse;
+        h_UU[1][2] = (h[0][1] * h[2][0] - h[0][0] * h[2][1]) * det_inverse;
+        h_UU[2][1] = (h[1][0] * h[0][2] - h[0][0] * h[1][2]) * det_inverse;
+
         for (int icomp = a_ncomp.begin(); icomp <= a_ncomp.end(); ++icomp)
         {
-            Real laplacian_of_psi = 0.0;
+            Real d2psi_dxdx[3] = {0};
             for (int idir = 0; idir < SpaceDim; ++idir)
             {
                 IntVect iv_offset1 = a_iv;
@@ -226,13 +254,52 @@ inline RealVect get_laplacian(const Box &a_b, // Should this be RealVect or Real
                 iv_offset2[idir] += 1;
 
                 // 2nd order stencil for now
-                Real d2psi_dxdx =
+                d2psi_dxdx[idir] =
                     1.0 / (a_dx[idir] * a_dx[idir]) *
                     (+1.0 * multigrid_vars_box(iv_offset2, icomp) -
                      2.0 * multigrid_vars_box(a_iv, icomp) +
                      1.0 * multigrid_vars_box(iv_offset1, icomp));
-                laplacian_of_psi += d2psi_dxdx;
             }
+
+
+            Real d2psi_dxdy[3] = {0};
+            for (int idir1 = 0; idir1 < SpaceDim; ++idir1)
+            {
+                for (int idir2 = idir1 + 1; idir2 < SpaceDim; ++idir2)
+                {
+                    IntVect iv_offset1 = a_iv;
+                    IntVect iv_offset2 = a_iv;
+                    IntVect iv_offset3 = a_iv;
+                    IntVect iv_offset4 = a_iv;
+                    iv_offset1[idir1] -= 1;
+                    iv_offset1[idir2] -= 1;
+                    iv_offset2[idir1] += 1;
+                    iv_offset2[idir2] += 1;
+                    iv_offset3[idir1] += 1;
+                    iv_offset3[idir2] -= 1;
+                    iv_offset4[idir1] -= 1;
+                    iv_offset4[idir2] += 1;
+
+                    // 2nd order stencils for now
+                    d2psi_dxdy[idir1 + idir2 - 1] =
+                        (multigrid_vars_box(iv_offset1, icomp) +
+                         multigrid_vars_box(iv_offset2, icomp) -
+                         multigrid_vars_box(iv_offset3, icomp) -
+                         multigrid_vars_box(iv_offset4, icomp)) /
+                        (4 * a_dx[idir1] * a_dx[idir2]);
+                }
+            }
+
+            Real laplacian_of_psi = 0;
+            for (int i = 0; i < SpaceDim; ++i)
+            {
+                laplacian_of_psi += h_UU[i][i] * d2psi_dxdx[i];
+            }
+
+            laplacian_of_psi += 2 * h_UU[0][1] * d2psi_dxdy[0] +
+                                2 * h_UU[0][2] * d2psi_dxdy[1] +
+                                2 * h_UU[1][2] * d2psi_dxdy[2];
+
             a_lapl_of_variable(a_iv, icomp) = laplacian_of_psi;
         }
     }
