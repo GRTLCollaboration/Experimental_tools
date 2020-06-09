@@ -76,9 +76,10 @@ inline RealVect get_rhograd(const Box &a_b, const FArrayBox &multigrid_vars_box,
         h[0][1] = multigrid_vars_box(a_iv, c_h12_0);
         h[0][2] = multigrid_vars_box(a_iv, c_h13_0);
         h[1][2] = multigrid_vars_box(a_iv, c_h23_0);
-        h[0][1] = h[1][0];
-        h[0][2] = h[2][0];
-        h[1][2] = h[2][1];
+        h[1][0] = h[0][1];
+        h[2][0] = h[0][2];
+        h[2][1] = h[1][2];
+
 
         Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
                    h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
@@ -223,9 +224,10 @@ inline RealVect get_laplacian(const Box &a_b, // Should this be RealVect or Real
         h[0][1] = multigrid_vars_box(a_iv, c_h12_0);
         h[0][2] = multigrid_vars_box(a_iv, c_h13_0);
         h[1][2] = multigrid_vars_box(a_iv, c_h23_0);
-        h[0][1] = h[1][0];
-        h[0][2] = h[2][0];
-        h[1][2] = h[2][1];
+        h[1][0] = h[0][1];
+        h[2][0] = h[0][2];
+        h[2][1] = h[1][2];
+
 
         Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
                    h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
@@ -260,7 +262,6 @@ inline RealVect get_laplacian(const Box &a_b, // Should this be RealVect or Real
                      2.0 * multigrid_vars_box(a_iv, icomp) +
                      1.0 * multigrid_vars_box(iv_offset1, icomp));
             }
-
 
             Real d2psi_dxdy[3] = {0};
             for (int idir1 = 0; idir1 < SpaceDim; ++idir1)
@@ -328,9 +329,9 @@ inline RealVect get_inverse(const Box &a_b, // Should this be RealVect or Real
         h[0][1] = multigrid_vars_box(a_iv, c_h12_0);
         h[0][2] = multigrid_vars_box(a_iv, c_h13_0);
         h[1][2] = multigrid_vars_box(a_iv, c_h23_0);
-        h[0][1] = h[1][0];
-        h[0][2] = h[2][0];
-        h[1][2] = h[2][1];
+        h[1][0] = h[0][1];
+        h[2][0] = h[0][2];
+        h[2][1] = h[1][2];
 
         Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
                    h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +

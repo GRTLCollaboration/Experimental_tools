@@ -57,7 +57,7 @@ bc_value = 0.0
 G_Newton = 1.0 
 
 # scalar field input params
-#read_from_file = readin.3d.hdf5
+read_from_file = readin.3d.hdf5
 phi_amplitude = 0.05
 phi_wavelength = 1
 pi_amplitude = 0.0

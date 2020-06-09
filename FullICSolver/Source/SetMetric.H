@@ -25,9 +25,10 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
     h[0][1] = multigrid_vars_box(iv, c_h12_0);
     h[0][2] = multigrid_vars_box(iv, c_h13_0);
     h[1][2] = multigrid_vars_box(iv, c_h23_0);
-    h[0][1] = h[1][0];
-    h[0][2] = h[2][0];
-    h[1][2] = h[2][1];
+    h[1][0] = h[0][1];
+    h[2][0] = h[0][2];
+    h[2][1] = h[1][2];
+
 
     Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
                h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
@@ -105,9 +106,9 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
             d2_h[0][1][j][i] = d2_h[0][1][i][j];
             d2_h[0][2][j][i] = d2_h[0][2][i][j];
             d2_h[1][2][j][i] = d2_h[1][2][i][j];
-            d2_h[1][0][j][i] = d2_h[0][1][i][j];
-            d2_h[2][0][j][i] = d2_h[0][2][i][j];
-            d2_h[2][1][j][i] = d2_h[1][2][i][j];
+            d2_h[1][0][j][i] = d2_h[1][0][i][j];
+            d2_h[2][0][j][i] = d2_h[2][0][i][j];
+            d2_h[2][1][j][i] = d2_h[2][1][i][j];
         }
     }
 
@@ -172,9 +173,10 @@ void set_christoffel(FArrayBox &multigrid_vars_box, const IntVect &iv,
     h[0][1] = multigrid_vars_box(iv, c_h12_0);
     h[0][2] = multigrid_vars_box(iv, c_h13_0);
     h[1][2] = multigrid_vars_box(iv, c_h23_0);
-    h[0][1] = h[1][0];
-    h[0][2] = h[2][0];
-    h[1][2] = h[2][1];
+    h[1][0] = h[0][1];
+    h[2][0] = h[0][2];
+    h[2][1] = h[1][2];
+
 
     Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
                h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
@@ -218,9 +220,9 @@ void set_christoffel(FArrayBox &multigrid_vars_box, const IntVect &iv,
             {
                 for (int l = 0; l < SpaceDim; l++)
                 {
-                    chris[i][j][k] += 0.5 * h_UU[k][l] *
-                                (d1_h[i][l][j] + d1_h[j][l][i] -
-                                      d1_h[i][j][l]);
+                    chris[i][j][k] +=
+                        0.5 * h_UU[k][l] *
+                        (d1_h[i][l][j] + d1_h[j][l][i] - d1_h[i][j][l]);
                 }
             }
         }
