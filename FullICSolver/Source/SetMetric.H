@@ -29,7 +29,6 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
     h[2][0] = h[0][2];
     h[2][1] = h[1][2];
 
-
     Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
                h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
                h[0][2] * (h[1][0] * h[2][1] - h[1][1] * h[2][0]);
@@ -82,7 +81,7 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
         d1_hUU[2][0][i] = d1_hUU[0][2][i];
         d1_hUU[2][1][i] = d1_hUU[1][2][i];
 
-        for (int j = i + 1; i < SpaceDim; i++)
+        for (int j = i + 1; j < SpaceDim; j++)
         {
             d2_h[0][0][i][j] =
                 a_mixed_grad2_multigrid(iv, 3 * c_h11_0 + i + j - 1);
@@ -112,7 +111,8 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
         }
     }
 
-    Real ricci_tensor[3][3] = {0};
+    Real chris[3][3][3] = {0};
+    Real d1_chris[3][3][3][3] = {0};
     for (int i = 0; i < SpaceDim; i++)
     {
         for (int j = 0; j < SpaceDim; j++)
@@ -121,34 +121,96 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
             {
                 for (int l = 0; l < SpaceDim; l++)
                 {
-                    ricci_tensor[i][j] +=
-                        0.5 * d1_hUU[k][l][k] *
-                            (d1_h[j][l][i] + d1_h[i][l][j] - d1_h[i][j][l]) +
+                    chris[i][j][k] +=
                         0.5 * h_UU[k][l] *
-                            (d2_h[i][l][j][k] + d2_h[j][l][i][k] -
-                             d2_h[i][j][k][l] - d2_h[k][l][i][j]) -
-                        0.5 * d1_hUU[k][l][j] * d1_h[k][l][i];
+                        (d1_h[i][l][j] + d1_h[j][l][i] - d1_h[i][j][l]);
 
                     for (int m = 0; m < SpaceDim; m++)
                     {
-                        for (int n = 0; n < SpaceDim; n++)
-                        {
-                            ricci_tensor[i][j] +=
-                                0.25 * h_UU[m][n] * h_UU[k][l] *
-                                (d1_h[k][l][n] *
-                                     (d1_h[i][m][j] + d1_h[j][m][i] -
-                                      d1_h[i][j][m]) -
-                                 d1_h[m][k][i] * d1_h[n][l][j] -
-                                 2 * d1_h[i][k][m] * d1_h[j][n][l] +
-                                 2 * d1_h[i][k][m] * d1_h[j][l][n]);
-                        }
+                        d1_chris[i][j][k][m] +=
+                            0.5 * d1_hUU[k][l][m] *
+                                (d1_h[i][l][j] + d1_h[j][l][i] -
+                                 d1_h[i][j][l]) +
+                            0.5 * h_UU[k][l] *
+                                (d2_h[i][l][j][m] + d2_h[j][l][i][m] -
+                                 d2_h[i][j][l][m]);
                     }
                 }
             }
         }
     }
-    Real out_ricci = 0;
 
+    Real riemann_tensor[3][3][3][3] = {0};
+    for (int i = 0; i < SpaceDim; i++)
+    {
+        for (int j = 0; j < SpaceDim; j++)
+        {
+            for (int k = 0; k < SpaceDim; k++)
+            {
+                for (int l = 0; l < SpaceDim; l++)
+                {
+                    riemann_tensor[i][j][k][l] +=
+                        d1_chris[j][l][i][k] - d1_chris[j][k][i][l];
+
+                        for (int m = 0; m < SpaceDim; m++)
+                    {
+                        riemann_tensor[i][j][k][l] +=
+                            chris[m][k][i] * chris[j][l][m] -
+                            chris[m][l][i] * chris[j][k][m];
+                    }
+                }
+            }
+        }
+    }
+
+    Real ricci_tensor[3][3] = {0};
+    for (int i = 0; i < SpaceDim; i++)
+    {
+        for (int j = 0; j < SpaceDim; j++)
+        {
+            for (int k = 0; k < SpaceDim; k++)
+            {
+                ricci_tensor[i][j] += riemann_tensor[k][i][k][j];
+            }
+        }
+    }
+    // Real ricci_tensor[3][3] = {0};
+    // for (int i = 0; i < SpaceDim; i++)
+    // {
+    //     for (int j = 0; j < SpaceDim; j++)
+    //     {
+    //         for (int k = 0; k < SpaceDim; k++)
+    //         {
+    //             for (int l = 0; l < SpaceDim; l++)
+    //             {
+    //                 ricci_tensor[i][j] +=
+    //                     0.5 * d1_hUU[k][l][k] *
+    //                         (d1_h[j][l][i] + d1_h[i][l][j] - d1_h[i][j][l]) +
+    //                     0.5 * h_UU[k][l] *
+    //                         (d2_h[i][l][j][k] + d2_h[j][l][i][k] -
+    //                          d2_h[i][j][k][l] - d2_h[k][l][i][j]) -
+    //                     0.5 * d1_hUU[k][l][j] * d1_h[k][l][i];
+
+    //                 for (int m = 0; m < SpaceDim; m++)
+    //                 {
+    //                     for (int n = 0; n < SpaceDim; n++)
+    //                     {
+    //                         ricci_tensor[i][j] +=
+    //                             0.25 * h_UU[m][n] * h_UU[k][l] *
+    //                             (d1_h[k][l][n] *
+    //                                  (d1_h[i][m][j] + d1_h[j][m][i] -
+    //                                   d1_h[i][j][m]) -
+    //                              d1_h[m][k][i] * d1_h[n][l][j] -
+    //                              2 * d1_h[i][k][m] * d1_h[j][n][l] +
+    //                              2 * d1_h[i][k][m] * d1_h[j][l][n]);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    Real out_ricci = 0;
     for (int i = 0; i < SpaceDim; i++)
     {
         for (int j = 0; j < SpaceDim; j++)
@@ -176,7 +238,6 @@ void set_christoffel(FArrayBox &multigrid_vars_box, const IntVect &iv,
     h[1][0] = h[0][1];
     h[2][0] = h[0][2];
     h[2][1] = h[1][2];
-
 
     Real det = h[0][0] * (h[1][1] * h[2][2] - h[1][2] * h[2][1]) -
                h[0][1] * (h[2][2] * h[1][0] - h[1][2] * h[2][0]) +
