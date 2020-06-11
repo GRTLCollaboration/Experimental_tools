@@ -184,7 +184,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
             // Ricci term
             Real ricci = multigrid_vars_box(iv, c_R_0);
 
-            pout() << "ricci term is " << ricci << endl;
+            // pout() << "ricci term is " << ricci << endl;
 
             // Also \bar  A_ij \bar A^ij
             Real A2 = 0.0;
