@@ -224,7 +224,7 @@ void set_ricci(FArrayBox &multigrid_vars_box, const IntVect &iv,
 
     // pout() << "difference: " << out_ricci - out_ricci2 << endl;
     multigrid_vars_box(iv, c_R_0) = out_ricci;
-    multigrid_vars_box(iv, c_R_0_2) = out_ricci2;
+    // multigrid_vars_box(iv, c_R_0_2) = out_ricci2;
 }
 
 void set_christoffel(FArrayBox &multigrid_vars_box, const IntVect &iv,
