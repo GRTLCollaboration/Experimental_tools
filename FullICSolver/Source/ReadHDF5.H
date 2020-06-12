@@ -69,6 +69,61 @@ void read_level_data(LevelData<FArrayBox> &lev_dat_1,
     }
 }
 
+void readgrids(Vector<DisjointBoxLayout> &aa_grids,
+               const PoissonParameters &a_params
+               )
+{
+    HDF5Handle handle(a_params.read_from_file, HDF5Handle::OPEN_RDONLY);
+    HDF5HeaderData header;
+    header.readFromFile(handle);
+    int num_levels = header.m_int["num_levels"];
+    aa_grids.resize(num_levels);
+    for (int level = 0; level < aa_grids.size(); level++)
+    {
+        HDF5HeaderData level_header;
+        // Set the HDF5 group and load level header
+        char level_str[20];
+        sprintf(level_str, "%d", level);
+        const std::string label = std::string("level_") + level_str;
+        handle.setGroup(label);
+        level_header.readFromFile(handle);
+
+        // Check and write periodicity of file
+        bool periodic_bool[3];
+        for (int dir = 0; dir < SpaceDim; ++dir)
+        {
+            char dir_str[20];
+            sprintf(dir_str, "%d", dir);
+            const std::string periodic_label =
+                std::string("is_periodic_") + dir_str;
+            if (level_header.m_int[periodic_label] == true)
+            {
+                periodic_bool[dir] = true;
+                pout() << periodic_bool[dir] << endl;
+            }
+        }
+        // For now we need the loop below because the final output bdry
+        // conditions are always periodic.
+        if (a_params.periodic[0] == 0)
+        {
+            for (int dir = 0; dir < SpaceDim; ++dir){periodic_bool[dir] = false;}
+        }
+
+        // Read boxes and assign processors to create DisjointBoxLayout
+        // for this level
+        ProblemDomain a_domain(level_header.m_box["prob_domain"], periodic_bool);
+        Vector<Box> boxes;
+        int error = read(handle, boxes);
+        Vector<int> procIDs;
+        LoadBalance(procIDs, boxes);
+        DisjointBoxLayout layout(boxes, procIDs, a_domain);
+        aa_grids[level] = layout;
+    }
+    
+
+    handle.close();
+}
+
 void readHDF5(LevelData<FArrayBox> &a_multigrid_vars,
               const PoissonParameters &a_params, int ilev)
 {

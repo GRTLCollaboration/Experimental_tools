@@ -316,7 +316,14 @@ int main(int argc, char *argv[])
 
         // set up the grids, using the rhs for tagging to decide
         // where needs additional levels
-        set_grids(grids, params);
+        if (params.read_from_file == "none")
+        {
+            set_grids(grids, params);
+        }
+        else
+        {
+            readgrids(grids, params);
+        }
 
         // Solve the equations!
         status = poissonSolve(grids, params);
