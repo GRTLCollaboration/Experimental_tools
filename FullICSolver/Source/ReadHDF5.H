@@ -39,6 +39,13 @@ void defineExchangeCopier(const DisjointBoxLayout &a_level_grids,
     exchange_copier.exchangeDefine(grown_grids, iv_ghosts);
 }
 
+void exchange_function(LevelData<FArrayBox> &a_multigrid_vars,
+                     const Copier &a_exchange_copier)
+{
+
+    a_multigrid_vars.exchange(a_multigrid_vars.interval(), a_exchange_copier);
+}
+
 void read_level_data(LevelData<FArrayBox> &lev_dat_1,
                      LevelData<FArrayBox> &lev_dat_2)
 {
@@ -70,8 +77,7 @@ void read_level_data(LevelData<FArrayBox> &lev_dat_1,
 }
 
 void readgrids(Vector<DisjointBoxLayout> &aa_grids,
-               const PoissonParameters &a_params
-               )
+               const PoissonParameters &a_params)
 {
     HDF5Handle handle(a_params.read_from_file, HDF5Handle::OPEN_RDONLY);
     HDF5HeaderData header;
@@ -106,12 +112,16 @@ void readgrids(Vector<DisjointBoxLayout> &aa_grids,
         // conditions are always periodic.
         if (a_params.periodic[0] == 0)
         {
-            for (int dir = 0; dir < SpaceDim; ++dir){periodic_bool[dir] = false;}
+            for (int dir = 0; dir < SpaceDim; ++dir)
+            {
+                periodic_bool[dir] = false;
+            }
         }
 
         // Read boxes and assign processors to create DisjointBoxLayout
         // for this level
-        ProblemDomain a_domain(level_header.m_box["prob_domain"], periodic_bool);
+        ProblemDomain a_domain(level_header.m_box["prob_domain"],
+                               periodic_bool);
         Vector<Box> boxes;
         int error = read(handle, boxes);
         Vector<int> procIDs;
@@ -119,7 +129,6 @@ void readgrids(Vector<DisjointBoxLayout> &aa_grids,
         DisjointBoxLayout layout(boxes, procIDs, a_domain);
         aa_grids[level] = layout;
     }
-    
 
     handle.close();
 }
@@ -160,6 +169,7 @@ void readHDF5(LevelData<FArrayBox> &a_multigrid_vars,
     LevelData<FArrayBox> level_data_readin(a_multigrid_vars.disjointBoxLayout(),
                                            level_data_ghost.nComp(),
                                            level_data_ghost.ghostVect());
+
     level_data_ghost.copyTo(level_data_readin);
 
     read_level_data(level_data_readin, a_multigrid_vars);
