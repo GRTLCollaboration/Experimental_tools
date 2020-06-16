@@ -105,23 +105,23 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
         if (a_params.read_from_file != "none")
         {
-            readHDF5(*multigrid_vars[ilev], a_params, ilev);
+            readHDF5(*multigrid_vars[ilev], a_grids, a_params, ilev, ghosts);
         }
 
-        // For interlevel ghosts
-        if (ilev > 0)
-        {
-            QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev - 1],
-                                 vectDx[ilev][0], a_params.refRatio[ilev],
-                                 NUM_MULTIGRID_VARS, vectDomains[ilev]);
-            quadCFI.coarseFineInterp(*multigrid_vars[ilev], *multigrid_vars[ilev - 1]);
-        }
-
+        // // For interlevel ghosts
+        // if (ilev > 0)
+        // {
+        //     QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev - 1],
+        //                          vectDx[ilev][0], a_params.refRatio[ilev],
+        //                          NUM_MULTIGRID_VARS, vectDomains[ilev]);
+        //     quadCFI.coarseFineInterp(*multigrid_vars[ilev], *multigrid_vars[ilev - 1]);
+        // }
+        
         // For intralevel ghosts - this is done in exchange_function
         // but need the exchange copier object to do this
         Copier exchange_copier;
         exchange_copier.exchangeDefine(a_grids[ilev], ghosts);
-
+        
         exchange_function(*multigrid_vars[ilev], exchange_copier);
         
         calculate_metric_components(*multigrid_vars[ilev], vectDx[ilev],
@@ -131,6 +131,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
         dxLev /= a_params.refRatio[ilev];
         domLev.refine(a_params.refRatio[ilev]);
     }
+
 
     // set up linear operator
     int lBase = 0;

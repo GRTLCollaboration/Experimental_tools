@@ -16,7 +16,7 @@ beta  = -1.0
 L = 128
 N = 64 64 64
 # number of AMR refinement levels is max_level + 1
-max_level    = 0
+max_level    = 1
 # Threshold for AMR refinement, based on magnitude of rhs
 refine_threshold = 0.6
 #min box size
@@ -44,7 +44,7 @@ coefficient_average_type = harmonic
 
 # Boundary conditions for domain-boundary faces 
 # 0 for non periodic, 1 for periodic (enforces same for all)
-is_periodic = 1
+is_periodic = 0
 # if not periodic, then what?
 # 1 -> const Neumann (gradient), 0 -> const Dirichlet (value)
 bc_lo       = 0 0 0
@@ -57,7 +57,7 @@ bc_value = 0.0
 G_Newton = 1.0 
 
 # scalar field input params
-read_from_file = readin.3d.hdf5
+read_from_file = readin3.3d.hdf5
 phi_amplitude = 0.05
 phi_wavelength = 1
 pi_amplitude = 0.0

@@ -47,16 +47,18 @@ void exchange_function(LevelData<FArrayBox> &a_multigrid_vars,
 }
 
 void read_level_data(LevelData<FArrayBox> &lev_dat_1,
-                     LevelData<FArrayBox> &lev_dat_2)
+                     LevelData<FArrayBox> &lev_dat_2, int ilev)
 {
     CH_assert(lev_dat_1.disjointBoxLayout() == lev_dat_2.disjointBoxLayout());
 
     DataIterator dit = lev_dat_1.dataIterator();
     for (dit.begin(); dit.ok(); ++dit)
     {
-        FArrayBox &fab_1 = lev_dat_1[dit];
-        FArrayBox &fab_2 = lev_dat_2[dit];
-        Box b = fab_2.box();
+        FArrayBox &fab_1 = lev_dat_1[dit()];
+        FArrayBox &fab_2 = lev_dat_2[dit()];
+        // fab_1.setVal(0.0, c_h11);
+        // fab2.setVal(0.0, c_h11_0);
+        Box b = fab_1.box();
         BoxIterator bit(b);
         for (bit.begin(); bit.ok(); ++bit)
         {
@@ -71,6 +73,7 @@ void read_level_data(LevelData<FArrayBox> &lev_dat_1,
             fab_2(iv, c_h23_0) = fab_1(iv, c_h23);
             fab_2(iv, c_h33_0) = fab_1(iv, c_h33);
             fab_2(iv, c_psi) = pow(fab_1(iv, c_chi), -0.25);
+            pout() << iv << fab_1(iv, c_phi) << " level " << ilev << endl;
             //           }
         }
     }
@@ -134,45 +137,59 @@ void readgrids(Vector<DisjointBoxLayout> &aa_grids,
 }
 
 void readHDF5(LevelData<FArrayBox> &a_multigrid_vars,
-              const PoissonParameters &a_params, int ilev)
+                const Vector<DisjointBoxLayout> aa_grids,
+              const PoissonParameters &a_params, int ilev,
+                              const IntVect a_ghosts)
 {
 #ifdef CH_USE_HDF5
 
-    HDF5Handle handle(a_params.read_from_file, HDF5Handle::OPEN_RDONLY);
+    LevelData<FArrayBox> *gr_chombo_vars;
+    gr_chombo_vars = new LevelData<FArrayBox>(aa_grids[ilev], NUM_GRCHOMBO_VARS, a_ghosts);
 
+    HDF5Handle handle(a_params.read_from_file, HDF5Handle::OPEN_RDONLY);
+    HDF5HeaderData level_header;
+    // Set the HDF5 group and load level header
+    char level_str[20];
+    sprintf(level_str, "%d", ilev);
+    const std::string label = std::string("level_") + level_str;
+    handle.setGroup(label);
+    level_header.readFromFile(handle);
+
+    read(handle, *gr_chombo_vars, "data", aa_grids[ilev], Interval(), false);
+    
     pout() << "Reading data from " << a_params.read_from_file << endl;
 
-    HDF5HeaderData header;
-    header.readFromFile(handle);
+    // HDF5HeaderData header;
+    // header.readFromFile(handle);
 
-    // Read file
-    const DisjointBoxLayout &level_domain =
-        a_multigrid_vars.disjointBoxLayout();
-    Real dx, dt, time;
-    Box box;
-    int ref_ratio;
+    // // Read file
+    // const DisjointBoxLayout &level_domain =
+    //     a_multigrid_vars.disjointBoxLayout();
+    // Real dx, dt, time;
+    // Box box;
+    // int ref_ratio;
 
-    Copier exchange_copier;
-    LevelData<FArrayBox> level_data_noghost(level_domain, NUM_GRCHOMBO_VARS,
-                                            0 * IntVect::Unit);
-    LevelData<FArrayBox> level_data_ghost(level_domain, NUM_GRCHOMBO_VARS,
-                                          3 * IntVect::Unit);
+    // Copier exchange_copier;
+    // LevelData<FArrayBox> level_data_noghost(level_domain, NUM_GRCHOMBO_VARS,
+    //                                         0 * IntVect::Unit);
+    // LevelData<FArrayBox> level_data_ghost(level_domain, NUM_GRCHOMBO_VARS,
+    //                                       3 * IntVect::Unit);
 
-    readLevel(handle, ilev, level_data_noghost, dx, dt, time, box, ref_ratio,
-              level_data_noghost.interval(), false);
+    // readLevel(handle, ilev, level_data_noghost, dx, dt, time, box, ref_ratio,
+    //           level_data_noghost.interval(), false);
 
-    level_data_noghost.copyTo(level_data_ghost);
-    //    defineExchangeCopier(level_domain,
-    //    level_data_noghost.disjointBoxLayout(), exchange_copier);
-    //    level_data_ghost.exchange(exchange_copier);
+    // level_data_noghost.copyTo(level_data_ghost);
+    // //    defineExchangeCopier(level_domain,
+    // //    level_data_noghost.disjointBoxLayout(), exchange_copier);
+    // //    level_data_ghost.exchange(exchange_copier);
 
-    LevelData<FArrayBox> level_data_readin(a_multigrid_vars.disjointBoxLayout(),
-                                           level_data_ghost.nComp(),
-                                           level_data_ghost.ghostVect());
+    // LevelData<FArrayBox> level_data_readin(a_multigrid_vars.disjointBoxLayout(),
+    //                                        level_data_ghost.nComp(),
+    //                                        level_data_ghost.ghostVect());
 
-    level_data_ghost.copyTo(level_data_readin);
+    // level_data_ghost.copyTo(level_data_readin);
 
-    read_level_data(level_data_readin, a_multigrid_vars);
+    read_level_data(*gr_chombo_vars, a_multigrid_vars, ilev);
 
     handle.close();
 
