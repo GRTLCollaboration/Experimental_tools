@@ -52,14 +52,16 @@ void read_level_data(LevelData<FArrayBox> &lev_dat_1,
     CH_assert(lev_dat_1.disjointBoxLayout() == lev_dat_2.disjointBoxLayout());
 
     DataIterator dit = lev_dat_1.dataIterator();
+    const DisjointBoxLayout &grids = lev_dat_1.disjointBoxLayout();
     for (dit.begin(); dit.ok(); ++dit)
     {
         FArrayBox &fab_1 = lev_dat_1[dit()];
         FArrayBox &fab_2 = lev_dat_2[dit()];
         // fab_1.setVal(0.0, c_h11);
         // fab2.setVal(0.0, c_h11_0);
-        Box b = fab_1.box();
-        BoxIterator bit(b);
+        Box b = fab_2.box();
+        Box b_no_ghosts = grids[dit()];
+        BoxIterator bit(b_no_ghosts);
         for (bit.begin(); bit.ok(); ++bit)
         {
             IntVect iv = bit();
@@ -73,7 +75,7 @@ void read_level_data(LevelData<FArrayBox> &lev_dat_1,
             fab_2(iv, c_h23_0) = fab_1(iv, c_h23);
             fab_2(iv, c_h33_0) = fab_1(iv, c_h33);
             fab_2(iv, c_psi) = pow(fab_1(iv, c_chi), -0.25);
-            pout() << iv << fab_1(iv, c_phi) << " level " << ilev << endl;
+            // pout() << iv << fab_1(iv, c_phi) << " level " << ilev << endl;
             //           }
         }
     }

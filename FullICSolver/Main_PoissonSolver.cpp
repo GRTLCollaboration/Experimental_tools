@@ -108,14 +108,14 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
             readHDF5(*multigrid_vars[ilev], a_grids, a_params, ilev, ghosts);
         }
 
-        // // For interlevel ghosts
-        // if (ilev > 0)
-        // {
-        //     QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev - 1],
-        //                          vectDx[ilev][0], a_params.refRatio[ilev],
-        //                          NUM_MULTIGRID_VARS, vectDomains[ilev]);
-        //     quadCFI.coarseFineInterp(*multigrid_vars[ilev], *multigrid_vars[ilev - 1]);
-        // }
+        // For interlevel ghosts
+        if (ilev > 0)
+        {
+            QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev - 1],
+                                 vectDx[ilev][0], a_params.refRatio[ilev],
+                                 NUM_MULTIGRID_VARS, vectDomains[ilev]);
+            quadCFI.coarseFineInterp(*multigrid_vars[ilev], *multigrid_vars[ilev - 1]);
+        }
         
         // For intralevel ghosts - this is done in exchange_function
         // but need the exchange copier object to do this
