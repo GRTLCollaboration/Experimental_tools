@@ -65,4 +65,7 @@ class PoissonParameters
 /// get stuff from input file
 extern void getPoissonParameters(PoissonParameters &a_params);
 
+// reads params from HDF5 file
+void Read_params_from_HDF5(PoissonParameters &aa_params);
+
 #endif

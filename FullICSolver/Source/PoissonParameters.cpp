@@ -14,6 +14,7 @@
 #include "BRMeshRefine.H"
 #include "BiCGStabSolver.H"
 #include "BoxIterator.H"
+#include "CH_HDF5.H"
 #include "CONSTANTS.H"
 #include "CoarseAverage.H"
 #include "LoadBalance.H"
@@ -101,6 +102,14 @@ void getPoissonParameters(PoissonParameters &a_params)
             a_params.coarsestDx * a_params.nCells[idir];
     }
 
+    // If there is an HDF5 file to read from, the solver should use the params
+    // that are specified in that file's handle.
+    // We may need to add more parameters here, but this is sufficient for now.
+    if (a_params.read_from_file != "none")
+    {
+        Read_params_from_HDF5(a_params);
+    }
+
     // Chombo refinement and load balancing criteria
     pp.get("refine_threshold", a_params.refineThresh);
     pp.get("block_factor", a_params.blockFactor);
@@ -152,4 +161,43 @@ void getPoissonParameters(PoissonParameters &a_params)
     a_params.coarsestDomain = crseDom;
 
     pout() << "periodicity = " << is_periodic << endl;
+}
+
+void Read_params_from_HDF5(PoissonParameters &aa_params)
+{
+    // Load main and level-0 headers
+    HDF5Handle handle(aa_params.read_from_file, HDF5Handle::OPEN_RDONLY);
+    HDF5HeaderData header, level_0_header;
+    header.readFromFile(handle);
+    handle.setGroup("level_0");
+    level_0_header.readFromFile(handle);
+    handle.close();
+    
+    // reset various relevant parameters
+    aa_params.maxLevel  = header.m_int["max_level"];
+    aa_params.numLevels = aa_params.maxLevel + 1;
+    for (int idir = 0; idir < SpaceDim; idir++)
+    {
+        aa_params.nCells[idir] = level_0_header.m_box["prob_domain"].size(idir);
+    }
+    aa_params.coarsestDx = level_0_header.m_real["dx"];
+    aa_params.refRatio.resize(aa_params.numLevels);
+    aa_params.refRatio.assign(2);
+    for (int idir = 0; idir < SpaceDim; idir++)
+    {
+        aa_params.domainLength[idir] =
+            aa_params.coarsestDx * aa_params.nCells[idir];
+    }
+
+    // Print what was changed
+    pout() <<   "The following params were read from file and changed:\n" << 
+                "\tMax level = " << aa_params.maxLevel << endl << 
+                "\tNumber of levels = " << aa_params.numLevels << endl << 
+                "\tN = " << aa_params.nCells[0] << " "
+                       << aa_params.nCells[1] << " "
+                       << aa_params.nCells[2] << endl << 
+                "\tCoarsest dx = " << aa_params.coarsestDx << endl << 
+                "\tLength of refRatio = " << 
+                aa_params.refRatio.size() << endl << 
+                "\tDomain lengt = " << aa_params.domainLength[0] << endl;
 }
