@@ -128,7 +128,7 @@ void readgrids(Vector<DisjointBoxLayout> &aa_grids,
         ProblemDomain a_domain(level_header.m_box["prob_domain"],
                                periodic_bool);
         Vector<Box> boxes;
-        int error = read(handle, boxes);
+        int grid_error = read(handle, boxes);
         Vector<int> procIDs;
         LoadBalance(procIDs, boxes);
         DisjointBoxLayout layout(boxes, procIDs, a_domain);
@@ -157,7 +157,7 @@ void readHDF5(LevelData<FArrayBox> &a_multigrid_vars,
     handle.setGroup(label);
     level_header.readFromFile(handle);
 
-    read(handle, *gr_chombo_vars, "data", aa_grids[ilev], Interval(), false);
+    int data_error = read(handle, *gr_chombo_vars, "data", aa_grids[ilev], Interval(), false);
     
     pout() << "Reading data from " << a_params.read_from_file << endl;
 
@@ -192,6 +192,10 @@ void readHDF5(LevelData<FArrayBox> &a_multigrid_vars,
     // level_data_ghost.copyTo(level_data_readin);
 
     read_level_data(*gr_chombo_vars, a_multigrid_vars, ilev);
+
+    // Cleaning storage
+    delete gr_chombo_vars;
+    gr_chombo_vars = NULL;
 
     handle.close();
 
