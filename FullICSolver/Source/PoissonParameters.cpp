@@ -44,6 +44,28 @@ void getPoissonParameters(PoissonParameters &a_params)
 		a_params.read_from_file = "none";
 	}
 
+	if (pp.contains("read_from_data"))
+	{	
+		pp.get("read_from_data", a_params.read_from_data);
+	}
+	else
+	{
+		a_params.read_from_data = "none";
+	}
+
+    // read from set of data
+    int lines;
+    pp.get("data_lines", lines);
+    pp.get("data_spacing", a_params.spacing);
+    Real inputpsi[lines];
+    Real tmp = 0.0;
+    ifstream ifspsi (a_params.read_from_data);
+    for (int i = 0; i < lines; ++i){
+        ifspsi >> tmp;
+        inputpsi[i] = tmp;
+    }
+    a_params.psi = inputpsi;
+
     // Initial conditions for the scalar field
     pp.get("G_Newton", a_params.G_Newton);
     pp.get("phi_amplitude", a_params.phi_amplitude);

@@ -61,9 +61,27 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
             // and when we calculate psi_0 in the rhs etc
             // as it already satisfies Laplacian(psi) = 0
             multigrid_vars_box(iv, c_psi_0) = 1.0;
+            if (a_params.read_from_data != "none")
+            {
+                RealVect loc(iv + 0.5 * RealVect::Unit);
+                loc *= a_dx;
+                loc -= a_params.domainLength / 2.0;
+                Real r = sqrt(D_TERM(loc[0] * loc[0], +loc[1] * loc[1], +loc[2] * loc[2]));
+
+                // interpolate
+                int indxL = static_cast<int>(floor(r / a_params.spacing));
+                int indxH = static_cast<int>(ceil(r / a_params.spacing));
+                double inputpsiL = *(a_params.psi + indxL);
+                double inputpsiH = *(a_params.psi + indxH);
+                Real psivals;
+                psivals = inputpsiL + (r / a_params.spacing - indxL) *
+                                          (inputpsiH - inputpsiL);
+                multigrid_vars_box(iv, c_psi_0) = psivals;
+            }
             dpsi_box(iv, c_psi) = 0.0;
 
-            // JCAurre: initialized the new variables and the linear solutions
+            // JCAurre: initialized the new variables and the linear
+            // solutions
             dpsi_box(iv, c_V0) = 0.0;
             dpsi_box(iv, c_V1) = 0.0;
             dpsi_box(iv, c_V2) = 0.0;
@@ -398,8 +416,8 @@ void set_update_psi0(LevelData<FArrayBox> &a_multigrid_vars,
                      const Copier &a_exchange_copier)
 {
 
-    // first exchange ghost cells for dpsi so they are filled with the correct
-    // values
+    // first exchange ghost cells for dpsi so they are filled with the
+    // correct values
     a_dpsi.exchange(a_dpsi.interval(), a_exchange_copier);
 
     DataIterator dit = a_multigrid_vars.dataIterator();
@@ -414,7 +432,8 @@ void set_update_psi0(LevelData<FArrayBox> &a_multigrid_vars,
         {
             IntVect iv = bit();
             multigrid_vars_box(iv, c_psi_0) += dpsi_box(
-                iv, c_psi); // JCAurre changed c_psi to c_psi_0 and 0 to c_psi
+                iv,
+                c_psi); // JCAurre changed c_psi to c_psi_0 and 0 to c_psi
 
             // JCAurre: update constraint variables
             multigrid_vars_box(iv, c_V0_0) += dpsi_box(iv, c_V0);
@@ -620,8 +639,8 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
             grchombo_vars_box(iv, c_chi) = chi;
             Real factor = pow(chi, 1.5);
 
-            // Copy phi and Aij across - note this is now \tilde Aij not \bar
-            // Aij
+            // Copy phi and Aij across - note this is now \tilde Aij not
+            // \bar Aij
             grchombo_vars_box(iv, c_phi) = multigrid_vars_box(iv, c_phi_0);
             grchombo_vars_box(iv, c_Pi) = multigrid_vars_box(iv, c_pi_0);
             grchombo_vars_box(iv, c_A11) =

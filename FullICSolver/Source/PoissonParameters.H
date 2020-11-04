@@ -60,6 +60,9 @@ class PoissonParameters
     Real bh1_offset;
     Real bh2_offset;
     std::string read_from_file;
+    std::string read_from_data;
+    Real *psi;
+    Real spacing;
 };
 
 /// get stuff from input file
