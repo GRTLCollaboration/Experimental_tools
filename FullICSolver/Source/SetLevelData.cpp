@@ -12,7 +12,7 @@
 #include "CONSTANTS.H"
 #include "CoarseAverage.H"
 #include "LoadBalance.H"
-#include "MyPhiFunction.H"
+#include "MyPhiPiFunction.H"
 #include "MyPotentialFunction.H"
 #include "PoissonParameters.H"
 #include "SetBinaryBH.H"
