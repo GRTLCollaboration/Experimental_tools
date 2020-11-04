@@ -35,36 +35,36 @@ void getPoissonParameters(PoissonParameters &a_params)
     pout() << "alpha, beta = " << a_params.alpha << ", " << a_params.beta
            << endl;
 
-	if (pp.contains("read_from_file"))
-	{	
-		pp.get("read_from_file", a_params.read_from_file);
-	}
-	else
-	{
-		a_params.read_from_file = "none";
-	}
-
-	if (pp.contains("read_from_data"))
-	{	
-		pp.get("read_from_data", a_params.read_from_data);
-	}
-	else
-	{
-		a_params.read_from_data = "none";
-	}
-
-    // read from set of data
-    int lines;
-    pp.get("data_lines", lines);
-    pp.get("data_spacing", a_params.spacing);
-    Real inputpsi[lines];
-    Real tmp = 0.0;
-    ifstream ifspsi (a_params.read_from_data);
-    for (int i = 0; i < lines; ++i){
-        ifspsi >> tmp;
-        inputpsi[i] = tmp;
+    if (pp.contains("read_from_file"))
+    {
+        pp.get("read_from_file", a_params.read_from_file);
     }
-    a_params.psi = inputpsi;
+    else
+    {
+        a_params.read_from_file = "none";
+    }
+
+    if (pp.contains("read_from_data"))
+    {
+        pp.get("read_from_data", a_params.read_from_data);
+        // read from set of data
+        int lines;
+        pp.get("data_lines", lines);
+        pp.get("data_spacing", a_params.spacing);
+        Real inputpsi[lines];
+        Real tmp = 0.0;
+        ifstream ifspsi(a_params.read_from_data);
+        for (int i = 0; i < lines; ++i)
+        {
+            ifspsi >> tmp;
+            inputpsi[i] = tmp;
+        }
+        a_params.psi = inputpsi;
+    }
+    else
+    {
+        a_params.read_from_data = "none";
+    }
 
     // Initial conditions for the scalar field
     pp.get("G_Newton", a_params.G_Newton);
@@ -76,7 +76,13 @@ void getPoissonParameters(PoissonParameters &a_params)
     if (abs(a_params.phi_amplitude) > 0.0)
     {
         pout() << "Spacetime contains scalar field of amplitude "
-               << a_params.phi_amplitude << endl;
+               << a_params.phi_amplitude <<  endl;
+    }
+
+    if (abs(a_params.pi_amplitude) > 0.0)
+    {
+        pout() << "Spacetime contains scalar momentum of amplitude "
+               << a_params.pi_amplitude <<  endl;
     }
 
     // Initial conditions for the black holes
@@ -194,9 +200,9 @@ void Read_params_from_HDF5(PoissonParameters &aa_params)
     handle.setGroup("level_0");
     level_0_header.readFromFile(handle);
     handle.close();
-    
+
     // reset various relevant parameters
-    aa_params.maxLevel  = header.m_int["max_level"];
+    aa_params.maxLevel = header.m_int["max_level"];
     aa_params.numLevels = aa_params.maxLevel + 1;
     for (int idir = 0; idir < SpaceDim; idir++)
     {
@@ -212,14 +218,12 @@ void Read_params_from_HDF5(PoissonParameters &aa_params)
     }
 
     // Print what was changed
-    pout() <<   "The following params were read from file and changed:\n" << 
-                "\tMax level = " << aa_params.maxLevel << endl << 
-                "\tNumber of levels = " << aa_params.numLevels << endl << 
-                "\tN = " << aa_params.nCells[0] << " "
-                       << aa_params.nCells[1] << " "
-                       << aa_params.nCells[2] << endl << 
-                "\tCoarsest dx = " << aa_params.coarsestDx << endl << 
-                "\tLength of refRatio = " << 
-                aa_params.refRatio.size() << endl << 
-                "\tDomain lengt = " << aa_params.domainLength[0] << endl;
+    pout() << "The following params were read from file and changed:\n"
+           << "\tMax level = " << aa_params.maxLevel << endl
+           << "\tNumber of levels = " << aa_params.numLevels << endl
+           << "\tN = " << aa_params.nCells[0] << " " << aa_params.nCells[1]
+           << " " << aa_params.nCells[2] << endl
+           << "\tCoarsest dx = " << aa_params.coarsestDx << endl
+           << "\tLength of refRatio = " << aa_params.refRatio.size() << endl
+           << "\tDomain lengt = " << aa_params.domainLength[0] << endl;
 }
