@@ -33,7 +33,7 @@ numMGsmooth = 4 # number of GSRB smooths before and after MG coarsening
 num_mg     = 1 
 numMGIterations = 2 #this is the number of MG v-cycles in the preconditioner
 max_iterations = 100 #max number of solver iterations
-max_NL_iterations = 6 #non linear outside loop iterations
+max_NL_iterations = 20 #non linear outside loop iterations
 tolerance  = 1.0e-10  #solver tolerance for declaring convergence
 hang       = 1.0e-11  #solver tolerance for deciding when we're hung
 verbosity = 2 # higher number means more verbose output
@@ -44,7 +44,7 @@ coefficient_average_type = harmonic
 
 # Boundary conditions for domain-boundary faces 
 # 0 for non periodic, 1 for periodic (enforces same for all)
-is_periodic = 0
+is_periodic = 1
 # if not periodic, then what?
 # 1 -> const Neumann (gradient), 0 -> const Dirichlet (value)
 bc_lo       = 0 0 0
@@ -64,7 +64,7 @@ G_Newton = 1.0
 
 phi_amplitude = 0.1
 phi_wavelength = 1
-pi_amplitude = 0.0
+pi_amplitude = 0.01
 pi_wavelength = 1
 
 # initial conditions for Binary BH spacetimes
