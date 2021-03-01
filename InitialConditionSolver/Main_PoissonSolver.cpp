@@ -153,7 +153,9 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
                                        a_params.coarsestDx, Interval(0, 0));
             Real volume = a_params.domainLength[0] * a_params.domainLength[1] *
                           a_params.domainLength[2];
-            constant_K = -sqrt(abs(integral) / volume);
+            // constant_K = -sqrt(abs(integral) / volume);  \\ this is the old method where we take the sqrt, problematic
+            // constant_K = abs(integral) / volume; // this is passing constant_K as K^2, one needs to change the set_m_value equations, problematic
+            constant_K = 24.0 * M_PI * 1.0;  // Here we force the value of K^2 since we know that V=1 (in principle, this should be the same as the previous one), converges
             pout() << "Constant average K value set to " << constant_K << endl;
         }
 

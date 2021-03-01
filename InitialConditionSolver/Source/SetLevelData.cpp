@@ -314,11 +314,23 @@ inline Real get_m(const Real &phi_here, const PoissonParameters &a_params,
     // For now rho is just the gradient term which is kept separate
     // ... may want to add V(phi) and phidot/Pi here later though
     Real Pi_field = 0.0;
-    Real V_of_phi = 0.0;
+    Real V_of_phi = 1.0;
     Real rho = 0.5 * Pi_field * Pi_field + V_of_phi;
 
-    return (2.0 / 3.0) * (constant_K * constant_K) -
-           16.0 * M_PI * a_params.G_Newton * rho;
+    Real m = (2.0 / 3.0) * (constant_K * constant_K) -
+             16.0 * M_PI * a_params.G_Newton * rho;  // old method using constant_K = sqrt(K^2), problematic
+
+    Real mnew =
+        (2.0 / 3.0) * (constant_K) - 16.0 * M_PI * a_params.G_Newton * rho; // using constant_K = K^2
+
+    Real mnew2 =
+        (2.0 / 3.0) * (constant_K - 24.0 * M_PI * a_params.G_Newton * rho); // using constant_K = K^2 but Eqn is rewritten
+
+    pout() << "m value " << std::setprecision(15) << m << endl;
+    pout() << "mnew value " << std::setprecision(15) << mnew << endl;
+    pout() << "mnew2 value " << std::setprecision(15) << mnew2 << endl;
+
+    return mnew2;
 }
 
 // The coefficient of the I operator on dpsi
