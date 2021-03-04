@@ -13,6 +13,7 @@
 #include "CoarseAverage.H"
 #include "LoadBalance.H"
 #include "MyPhiFunction.H"
+#include "MyPotentialFunction.H"
 #include "PoissonParameters.H"
 #include "SetBinaryBH.H"
 #include "VariableCoeffPoissonOperatorFactory.H"
@@ -62,7 +63,7 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
             // and when we calculate psi_0 in the rhs etc
             // as it already satisfies Laplacian(psi) = 0
             multigrid_vars_box(iv, c_psi_reg) = 1.0;
-            dpsi_box(iv, 0) = 0.0;
+            dpsi_box(iv, 0) = 0;
 
             // set the phi value - need the distance from centre
             RealVect loc;
@@ -150,7 +151,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
 
             // rhs = m/8 psi_0^5 - 2 pi rho_grad psi_0  - laplacian(psi_0)
             Real m =
-                get_m(multigrid_vars_box(iv, c_phi_0), a_params, constant_K);
+                get_m(loc, multigrid_vars_box(iv, c_phi_0), a_params, constant_K);
             Real grad_phi_sq = get_grad_phi_sq(iv, phi_fab, a_dx);
             Real laplacian_of_psi = get_laplacian_psi(iv, psi_fab, a_dx);
 
@@ -204,7 +205,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
 
             // integrand = -1.5*m + 1.5 * \bar A_ij \bar A^ij psi_0^-12 +
             // 24 pi rho_grad psi_0^-4  + 12*laplacian(psi_0)*psi^-5
-            Real m = get_m(multigrid_vars_box(iv, c_phi_0), a_params, 0.0);
+            Real m = get_m(loc, multigrid_vars_box(iv, c_phi_0), a_params, 0.0);
             Real grad_phi_sq = get_grad_phi_sq(iv, phi_fab, a_dx);
             Real laplacian_of_psi = get_laplacian_psi(iv, psi_fab, a_dx);
 
@@ -220,7 +221,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
             Real psi_bl = get_psi_brill_lindquist(loc, a_params);
             Real psi_0 = multigrid_vars_box(iv, c_psi_reg) + psi_bl;
 
-            integrand_box(iv, 0) = -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
+            integrand_box(iv, 0) =  -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
                                    12.0 * M_PI * a_params.G_Newton *
                                        grad_phi_sq * pow(psi_0, -4.0) +
                                    12.0 * laplacian_of_psi * pow(psi_0, -5.0);
@@ -255,7 +256,7 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
             get_loc(loc, iv, a_dx, a_params);
 
             // calculate contributions
-            Real m = get_m(multigrid_vars_box(iv, c_phi_0), a_params, 0.0);
+            Real m = get_m(loc, multigrid_vars_box(iv, c_phi_0), a_params, 0.0);
             Real grad_phi_sq = get_grad_phi_sq(iv, phi_fab, a_dx);
 
             // Also \bar  A_ij \bar A^ij
@@ -306,15 +307,15 @@ void set_update_psi0(LevelData<FArrayBox> &a_multigrid_vars,
 }
 
 // m(K, rho) = 2/3K^2 - 16piG rho
-inline Real get_m(const Real &phi_here, const PoissonParameters &a_params,
+inline Real get_m(RealVect loc, const Real &phi_here, const PoissonParameters &a_params,
                   const Real constant_K)
 {
 
     // KC TODO:
     // For now rho is just the gradient term which is kept separate
     // ... may want to add V(phi) and phidot/Pi here later though
-    Real Pi_field = 0.0;
-    Real V_of_phi = 1.0;
+    Real Pi_field = 10.0 + 5.5e-2*phi_here;
+    Real V_of_phi = 0.0;
     Real rho = 0.5 * Pi_field * Pi_field + V_of_phi;
 
     Real m = (2.0 / 3.0) * (constant_K * constant_K) -
@@ -323,21 +324,16 @@ inline Real get_m(const Real &phi_here, const PoissonParameters &a_params,
     Real mnew =
         (2.0 / 3.0) * (constant_K) - 16.0 * M_PI * a_params.G_Newton * rho; // using constant_K = K^2
 
-    Real mnew2 =
-        (2.0 / 3.0) * (constant_K - 24.0 * M_PI * a_params.G_Newton * rho); // using constant_K = K^2 but Eqn is rewritten
-
-    pout() << "m value " << std::setprecision(15) << m << endl;
     pout() << "mnew value " << std::setprecision(15) << mnew << endl;
-    pout() << "mnew2 value " << std::setprecision(15) << mnew2 << endl;
 
-    return mnew2;
+    return mnew;
 }
 
 // The coefficient of the I operator on dpsi
 void set_a_coef(LevelData<FArrayBox> &a_aCoef,
                 LevelData<FArrayBox> &a_multigrid_vars,
                 const PoissonParameters &a_params, const RealVect &a_dx,
-                const Real constant_K)
+                const Real constant_K, const Real Max)
 {
 
     CH_assert(a_multigrid_vars.nComp() == NUM_MULTIGRID_VARS);
@@ -359,7 +355,7 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             get_loc(loc, iv, a_dx, a_params);
             // m(K, phi) = 2/3 K^2 - 16 pi G rho
             Real m =
-                get_m(multigrid_vars_box(iv, c_phi_0), a_params, constant_K);
+                get_m(loc, multigrid_vars_box(iv, c_phi_0), a_params, constant_K);
             Real grad_phi_sq = get_grad_phi_sq(iv, phi_fab, a_dx);
 
             // Also \bar  A_ij \bar A^ij
@@ -376,6 +372,11 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
             aCoef_box(iv, 0) = -0.625 * m * pow(psi_0, 4.0) -
                                0.875 * A2 * pow(psi_0, -8.0) +
                                M_PI * a_params.G_Newton * grad_phi_sq;
+
+            if (Max > 0){
+                aCoef_box(iv, 0) += - Max - a_params.c_trick;
+                pout() << "aCoef: " << aCoef_box(iv, 0) << endl;
+            }
         }
     }
 }

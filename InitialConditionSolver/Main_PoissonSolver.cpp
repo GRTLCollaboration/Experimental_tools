@@ -61,6 +61,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
     Vector<LevelData<FArrayBox> *> integrand(nlevels, NULL);
     // the coeff for the I term
     Vector<RefCountedPtr<LevelData<FArrayBox>>> aCoef(nlevels);
+    Vector<LevelData<FArrayBox> *> aCoef_max(nlevels, NULL);
     // the coeff for the Laplacian
     Vector<RefCountedPtr<LevelData<FArrayBox>>> bCoef(nlevels);
 
@@ -87,6 +88,8 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
             new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
         aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
             new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
+        aCoef_max[ilev] =
+            new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
         bCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
             new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
         vectDomains[ilev] = domLev;
@@ -154,21 +157,43 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
             Real volume = a_params.domainLength[0] * a_params.domainLength[1] *
                           a_params.domainLength[2];
             // constant_K = -sqrt(abs(integral) / volume);  \\ this is the old method where we take the sqrt, problematic
-            // constant_K = abs(integral) / volume; // this is passing constant_K as K^2, one needs to change the set_m_value equations, problematic
-            constant_K = 24.0 * M_PI * 1.0;  // Here we force the value of K^2 since we know that V=1 (in principle, this should be the same as the previous one), converges
+            constant_K = abs(integral) / volume; // this is passing constant_K as K^2, one needs to change the set_m_value equations, problematic
+            // constant_K = 24.0 * M_PI * 1.0;  // Here we force the value of K^2 since we know that V=1 (in principle, this should be the same as the previous one), converges
             pout() << "Constant average K value set to " << constant_K << endl;
         }
+
+        // Calculate aCoef max to subtract
+        for (int ilev = 0; ilev < nlevels; ilev++)
+        {
+            set_a_coef(*aCoef_max[ilev], *multigrid_vars[ilev], a_params,
+                       vectDx[ilev], constant_K, 0.0);
+        }
+
+        Real Max = computeMax(aCoef_max, a_params.refRatio, Interval(0, 0));
+        pout() << "Max is " << Max << endl;
+
+        for (int ilev = 0; ilev < nlevels; ilev++)
+        {
+            set_a_coef(*aCoef_max[ilev], *multigrid_vars[ilev], a_params,
+                       vectDx[ilev], constant_K, Max);
+        }
+
+        Real Max2 = computeMax(aCoef_max, a_params.refRatio, Interval(0, 0));
+        pout() << "Max2 is " << Max2 << endl;
 
         // Calculate values for coefficients here - see SetLevelData.cpp
         // for details
         for (int ilev = 0; ilev < nlevels; ilev++)
         {
             set_a_coef(*aCoef[ilev], *multigrid_vars[ilev], a_params,
-                       vectDx[ilev], constant_K);
+                       vectDx[ilev], constant_K, Max);
             set_b_coef(*bCoef[ilev], a_params, vectDx[ilev]);
             set_rhs(*rhs[ilev], *multigrid_vars[ilev], vectDx[ilev], a_params,
                     constant_K);
         }
+
+        Real Max_rhs = computeMax(rhs, a_params.refRatio, Interval(0, 0));
+        pout() << "mrhs " << Max_rhs << endl;
 
         // set up solver factory
         RefCountedPtr<AMRLevelOpFactory<LevelData<FArrayBox>>> opFactory =

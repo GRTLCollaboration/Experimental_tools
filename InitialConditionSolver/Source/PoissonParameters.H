@@ -57,6 +57,7 @@ class PoissonParameters
     Real bh2_momentum;
     Real bh1_offset;
     Real bh2_offset;
+	Real c_trick;
 };
 
 /// get stuff from input file

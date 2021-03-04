@@ -51,13 +51,13 @@ extern void set_regrid_condition(LevelData<FArrayBox> &a_condition,
                                  const RealVect &a_dx,
                                  const PoissonParameters &a_params);
 
-extern Real get_m(const Real &phi_here, const PoissonParameters &a_params,
+extern Real get_m(RealVect loc, const Real &phi_here, const PoissonParameters &a_params,
                   const Real constant_K);
 
 extern void set_a_coef(LevelData<FArrayBox> &a_aCoef,
                        LevelData<FArrayBox> &a_multigrid_vars,
                        const PoissonParameters &a_params, const RealVect &a_dx,
-                       const Real constant_K);
+                       const Real constant_K, const Real Max);
 
 extern void set_b_coef(LevelData<FArrayBox> &a_bCoef,
                        const PoissonParameters &a_params, const RealVect &a_dx);
