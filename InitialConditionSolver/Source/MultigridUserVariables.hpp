@@ -9,7 +9,7 @@
 // assign an enum to each variable
 enum
 {
-    c_psi_reg, // the regular part of psi_0 not including the singular
+    c_psi, // the regular part of psi_0 not including the singular
                // Brill-Lindquist part which is added separately
                // See Alcubierre p112 eq. (3.4.29)
 

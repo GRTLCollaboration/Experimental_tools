@@ -14,6 +14,7 @@
 #include "MultilevelLinearOp.H"
 #include "ParmParse.H"
 #include "PoissonParameters.H"
+#include "GRChomboBCs.hpp"
 #include "SetBCs.H"
 #include "SetGrids.H"
 #include "SetLevelData.H"
@@ -72,7 +73,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
     RealVect dxLev = RealVect::Unit;
     dxLev *= a_params.coarsestDx;
     ProblemDomain domLev(a_params.coarsestDomain);
-    IntVect ghosts = 3 * IntVect::Unit;
+    IntVect ghosts = a_params.num_ghosts * IntVect::Unit;
 
     // Declare variables here, with num comps, and ghosts for all
     // sources NB - we want output data to have 3 ghost cells to match GRChombo,
@@ -91,10 +92,16 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
             new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
         vectDomains[ilev] = domLev;
         vectDx[ilev] = dxLev;
+
+        GRChomboBCs grchombo_boundaries;
+        grchombo_boundaries.define(vectDx[ilev][0],
+                                   a_params.grchombo_boundary_params,
+                                   a_params.coarsestDomain,
+                                   a_params.num_ghosts);
         // set initial guess for psi and zero dpsi
         // and values for other multigrid sources - phi and Aij
-        set_initial_conditions(*multigrid_vars[ilev], *dpsi[ilev], vectDx[ilev],
-                               a_params);
+        set_initial_conditions(*multigrid_vars[ilev], *dpsi[ilev],
+                               grchombo_boundaries, vectDx[ilev], a_params);
 
         // prepare temp dx, domain vars for next level
         dxLev /= a_params.refRatio[ilev];
@@ -212,6 +219,19 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
             // but need the exchange copier object to do this
             Copier exchange_copier;
             exchange_copier.exchangeDefine(a_grids[ilev], ghosts);
+
+            if(a_params.symmetric_boundaries_exist)
+            {
+                GRChomboBCs grchombo_boundaries;
+                grchombo_boundaries.define(vectDx[ilev][0],
+                                           a_params.grchombo_boundary_params,
+                                           a_params.coarsestDomain,
+                                           a_params.num_ghosts);
+                grchombo_boundaries.enforce_symmetric_boundaries(
+                                        Side::Hi, *dpsi[ilev]);
+                grchombo_boundaries.enforce_symmetric_boundaries(
+                                        Side::Lo, *dpsi[ilev]);
+            }
 
             // now the update
             set_update_psi0(*multigrid_vars[ilev], *dpsi[ilev],

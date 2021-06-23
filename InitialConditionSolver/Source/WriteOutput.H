@@ -32,6 +32,7 @@
 #include "PoissonParameters.H"
 #include "SetLevelData.H"
 #include <iostream>
+#include <limits>
 
 #ifdef CH_Linux
 // Should be undefined by default
@@ -128,9 +129,11 @@ void output_final_data(const Vector<LevelData<FArrayBox> *> &a_multigrid_vars,
 #ifdef CH_USE_HDF5
 
 #if CH_SPACEDIM == 2
-    string filename("InitialConditionsFinal.2d.hdf5");
+    string filename(a_params.filename+".2d.hdf5");
+    //string filename("InitialConditionsFinal.2d.hdf5");
 #else
-    string filename("InitialConditionsFinal.3d.hdf5");
+    string filename(a_params.filename+".3d.hdf5");
+    //string filename("InitialConditionsFinal.3d.hdf5");
 #endif
 
     // set up full data and write to hdf5 file ready for GRChombo
@@ -142,6 +145,11 @@ void output_final_data(const Vector<LevelData<FArrayBox> *> &a_multigrid_vars,
     header.m_int["num_levels"] = a_params.maxLevel + 1;
     header.m_int["iteration"] = 0;
     header.m_real["time"] = 0.0;
+    int steps_since_regrid = 0;
+    if (a_params.forceGRChomboRegrid)
+    {
+        steps_since_regrid = std::numeric_limits<int>::max();
+    }
 
     for (int level = 0; level < a_multigrid_vars.size(); ++level)
     {
@@ -151,7 +159,7 @@ void output_final_data(const Vector<LevelData<FArrayBox> *> &a_multigrid_vars,
 
         char headername2[100];
         sprintf(headername2, "steps_since_regrid_%d", level);
-        header.m_int[headername2] = 0;
+        header.m_int[headername2] = steps_since_regrid;
     }
 
     header.m_int["num_components"] = NUM_GRCHOMBO_VARS;
@@ -170,13 +178,21 @@ void output_final_data(const Vector<LevelData<FArrayBox> *> &a_multigrid_vars,
     for (int level = 0; level < a_multigrid_vars.size(); level++)
     {
         HDF5HeaderData level_header;
-        // want output data to have 3 ghost cells to match GRChombo
+
         grchombo_vars[level] = new LevelData<FArrayBox>(
-            a_grids[level], NUM_GRCHOMBO_VARS, 3 * IntVect::Unit);
+            a_grids[level], NUM_GRCHOMBO_VARS,
+            a_params.num_ghosts * IntVect::Unit);
+
+        GRChomboBCs grchombo_boundaries;
+        grchombo_boundaries.define(a_vectDx[level][0],
+                                   a_params.grchombo_boundary_params,
+                                   a_params.coarsestDomain,
+                                   a_params.num_ghosts);
 
         // Add in the values of the data in the correct form
         set_output_data(*grchombo_vars[level], *a_multigrid_vars[level],
-                        a_params, a_vectDx[level], constant_K);
+                        grchombo_boundaries, a_params, a_vectDx[level],
+                        constant_K);
 
         // Now continue the write out
         char level_str[20];
@@ -193,20 +209,28 @@ void output_final_data(const Vector<LevelData<FArrayBox> *> &a_multigrid_vars,
         level_header.m_real["time"] = 0.0;
         level_header.m_box["prob_domain"] = a_vectDomains[level].domainBox();
 
-        // Setup the periodicity info - for GRChombo we always treat it as
-        // periodic
-        for (int dir = 0; dir < SpaceDim; ++dir)
+        // Setup the periodicity info
+        for (int idir = 0; idir < SpaceDim; ++idir)
         {
             char dir_str[20];
-            sprintf(dir_str, "%d", dir);
+            sprintf(dir_str, "%d", idir);
             const std::string periodic_label =
                 std::string("is_periodic_") + dir_str;
-            level_header.m_int[periodic_label] = true;
+            level_header.m_int[periodic_label] = a_params.periodic[idir];
         }
 
         level_header.writeToFile(handle);
         write(handle, a_grids[level]);
-        write(handle, *grchombo_vars[level], "data");
+        IntVect ghost_vector = IntVect::Zero;
+        for (int idir = 0; idir < SpaceDim; ++idir)
+        {
+            if (!a_params.periodic[idir])
+            {
+                ghost_vector = a_params.num_ghosts * IntVect::Unit;
+                break;
+            }
+        }
+        write(handle, *grchombo_vars[level], "data", ghost_vector);
     }
 
     // shut the file

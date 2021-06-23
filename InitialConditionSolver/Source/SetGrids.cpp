@@ -89,8 +89,14 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids, PoissonParameters &a_params)
             temp_dpsi = new LevelData<FArrayBox>(vectGrids[level], 1,
                                                  3 * IntVect::Unit);
 
-            set_initial_conditions(*temp_multigrid_vars, *temp_dpsi, dxLevel,
-                                   a_params);
+            GRChomboBCs grchombo_boundaries;
+            grchombo_boundaries.define(dxLevel[0],
+                                       a_params.grchombo_boundary_params,
+                                       a_params.coarsestDomain,
+                                       a_params.num_ghosts);
+
+            set_initial_conditions(*temp_multigrid_vars, *temp_dpsi,
+                                   grchombo_boundaries, dxLevel, a_params);
 
             // set condition for regrid - use the integrability condition
             // integral

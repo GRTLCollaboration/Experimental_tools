@@ -46,12 +46,6 @@ enum
     c_phi, // matter field added
     c_Pi,  //(minus) conjugate momentum
 
-    c_Ham,
-
-    c_Mom1,
-    c_Mom2,
-    c_Mom3,
-
     NUM_GRCHOMBO_VARS
 };
 
@@ -76,9 +70,8 @@ static constexpr char const *variable_names[NUM_GRCHOMBO_VARS] = {
 
     "B1",     "B2",     "B3",
 
-    "phi",    "Pi",
-
-    "Ham",    "Mom1",   "Mom2",   "Mom3"};
+    "phi",    "Pi"
+};
 }
 
 #endif /* GRCHOMBOUSERVARIABLES_HPP */

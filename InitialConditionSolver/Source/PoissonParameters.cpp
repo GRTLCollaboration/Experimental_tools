@@ -26,6 +26,9 @@ void getPoissonParameters(PoissonParameters &a_params)
 {
     ParmParse pp;
 
+    // filename = filename_base.3d.hdf5
+    pp.get("filename_base", a_params.filename);
+
     // problem specific params
     pp.get("alpha", a_params.alpha);
     pp.get("beta", a_params.beta);
@@ -37,7 +40,7 @@ void getPoissonParameters(PoissonParameters &a_params)
     // Initial conditions for the scalar field
     pp.get("G_Newton", a_params.G_Newton);
     pp.get("phi_amplitude", a_params.phi_amplitude);
-    pp.get("phi_wavelength", a_params.phi_wavelength);
+    pp.get("phi_mu", a_params.phi_mu);
 
     if (abs(a_params.phi_amplitude) > 0.0)
     {
@@ -50,10 +53,20 @@ void getPoissonParameters(PoissonParameters &a_params)
     pp.get("bh2_bare_mass", a_params.bh2_bare_mass);
     pp.get("bh1_spin", a_params.bh1_spin);
     pp.get("bh2_spin", a_params.bh2_spin);
-    pp.get("bh1_offset", a_params.bh1_offset);
-    pp.get("bh2_offset", a_params.bh2_offset);
-    pp.get("bh1_momentum", a_params.bh1_momentum);
-    pp.get("bh2_momentum", a_params.bh2_momentum);
+    Real bh1_offset_x, bh1_offset_y, bh2_offset_x, bh2_offset_y;
+    Real bh1_momentum_x, bh1_momentum_y, bh2_momentum_x, bh2_momentum_y;
+    pp.get("bh1_offset_x", bh1_offset_x);
+    pp.get("bh1_offset_y", bh1_offset_y);
+    pp.get("bh2_offset_x", bh2_offset_x);
+    pp.get("bh2_offset_y", bh2_offset_y);
+    pp.get("bh1_momentum_x", bh1_momentum_x);
+    pp.get("bh1_momentum_y", bh1_momentum_y);
+    pp.get("bh2_momentum_x", bh2_momentum_x);
+    pp.get("bh2_momentum_y", bh2_momentum_y);
+    a_params.bh1_offset = {bh1_offset_x, bh1_offset_y, 0.0};
+    a_params.bh2_offset = {bh2_offset_x, bh2_offset_y, 0.0};
+    a_params.bh1_momentum = {bh1_momentum_x, bh1_momentum_y, 0.0};
+    a_params.bh2_momentum = {bh2_momentum_x, bh2_momentum_y, 0.0};    
 
     if (abs(a_params.bh1_bare_mass) > 0.0 || abs(a_params.bh2_bare_mass) > 0.0)
     {
@@ -96,6 +109,8 @@ void getPoissonParameters(PoissonParameters &a_params)
     pp.get("max_grid_size", a_params.maxGridSize);
     pp.get("fill_ratio", a_params.fillRatio);
     pp.get("buffer_size", a_params.bufferSize);
+    bool force_grchombo_regrid = true;
+    pp.query("force_grchombo_regrid", a_params.forceGRChomboRegrid);
 
     // set average type -
     // set to a bogus default value, so we only break from solver
@@ -128,6 +143,9 @@ void getPoissonParameters(PoissonParameters &a_params)
     a_params.probHi = RealVect::Zero;
     a_params.probHi += a_params.domainLength;
 
+    // Hardcode num_ghosts to 3 as this is what GRChombo needs
+    a_params.num_ghosts = 3;
+
     // Periodicity - for the moment enforce same in all directions
     ProblemDomain crseDom(crseDomBox);
     int is_periodic;
@@ -140,5 +158,59 @@ void getPoissonParameters(PoissonParameters &a_params)
     }
     a_params.coarsestDomain = crseDom;
 
+    // Load GRChombo boundary params
+    Vector<int> grchombo_hi_boundary(SpaceDim, GRChomboBCs::STATIC_BC);
+    Vector<int> grchombo_lo_boundary(SpaceDim, GRChomboBCs::STATIC_BC);
+    pp.queryarr("hi_boundary", grchombo_hi_boundary, 0, SpaceDim);
+    pp.queryarr("lo_boundary", grchombo_lo_boundary, 0, SpaceDim);
+
+    // set defaults and override below
+    Vector<int> vars_boundary_parity(NUM_MULTIGRID_VARS, GRChomboBCs::EVEN);
     pout() << "periodicity = " << is_periodic << endl;
+    for(int idir = 0; idir < SpaceDim; ++idir)
+    {
+        a_params.grchombo_boundary_params.hi_boundary[idir] =
+            grchombo_hi_boundary[idir];
+        a_params.grchombo_boundary_params.lo_boundary[idir] =
+            grchombo_lo_boundary[idir];
+        a_params.grchombo_boundary_params.is_periodic[idir] =
+            a_params.periodic[idir];
+
+    }
+    a_params.nonperiodic_boundaries_exist = false;
+    a_params.symmetric_boundaries_exist = false;
+
+    for (int idir = 0; idir < SpaceDim; ++idir)
+    {
+        if (!a_params.periodic[idir])
+        {
+            a_params.nonperiodic_boundaries_exist = true;
+            if ((grchombo_hi_boundary[idir] ==
+                 GRChomboBCs::REFLECTIVE_BC) ||
+                (grchombo_lo_boundary[idir] ==
+                 GRChomboBCs::REFLECTIVE_BC))
+            {
+                a_params.symmetric_boundaries_exist = true;
+                pp.getarr("vars_parity", vars_boundary_parity, 0,
+                          NUM_MULTIGRID_VARS);
+
+            }
+        }
+    }
+
+    for (int ivar = 0; ivar < NUM_MULTIGRID_VARS; ++ivar)
+    {
+        a_params.grchombo_boundary_params.vars_parity[ivar]
+            = vars_boundary_parity[ivar];
+    }
+
+    if (a_params.nonperiodic_boundaries_exist)
+    {
+        // write out boundary conditions where non periodic - useful for
+        // debug
+        GRChomboBCs::write_boundary_conditions(
+            a_params.grchombo_boundary_params);
+    }
+
+
 }
