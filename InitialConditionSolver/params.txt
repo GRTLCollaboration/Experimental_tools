@@ -23,7 +23,7 @@ max_level    = 9
 # Threshold for AMR refinement, based on magnitude of rhs
 refine_threshold = 0.1
 #min box size
-block_factor = 16
+block_factor = 32
 #max box size
 max_grid_size = 32
 # how aggressively to regrid
